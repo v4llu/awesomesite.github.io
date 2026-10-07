@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<title>My Awesome Webpage</title>
+<html>
+<head>
+    <link rel="stylesheet" href="styles.css">
+<style>
+h1 {text-align: center;}
+p {text-align: center; font-size: large;}
+div {text-align: center;}
+a {text-align: center;}
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+
+        body {
+            display: table;
+        }
+
+        .my-block {
+            text-align: center;
+            display: table-cell;
+            vertical-align: middle;
+        }
+</style>
+</head>
+<body>
+<div class="background-slideshow">
+    <div class="background background1 active"></div>
+    <div class="background background2"></div>
+</div>
+
+<div class="my-block">
+    <h1><b>Welcome to my webpage</b></h1>
+
+    <p>I make video with After Effects on YouTube</p>
+
+    <p>
+        <b>
+            <a class="rainbow" href="https://youtube.com/@indiahoodclips" target="_blank">
+                @indiahoodclips
+            </a>
+        </b>
+    </p>
+
+    <p>I make music with FL Studio on SoundCloud</p>
+
+    <p>
+        <b>
+            <a class="rainbow" href="https://soundcloud.com/dgfi" target="_blank">
+                dgfi
+            </a>
+        </b>
+    </p>
+
+        <p>My favorite animals are bunnies, Click below for a video of a bunny.</p>
+
+    <p>
+        <b>
+            <a class="rainbow" href="https://www.youtube.com/watch?v=lLlrl8yvLIE" target="_blank">
+                Cute bunny eating dandelion flowers
+            </a>
+        </b>
+    </p>
+</div>
+
+<script>
+const images = [
+    "background1.jpg",
+    "background2.jpg",
+    "background3.jpg",
+    "background4.jpg"
+];
+const backgrounds = document.querySelectorAll(".background");
+let current = 0;
+let layer = 0;
+backgrounds[0].style.backgroundImage = `url("${images[0]}")`;
+setInterval(() => {
+    const next = (current + 1) % images.length;
+    const nextLayer = (layer + 1) % backgrounds.length;
+
+    backgrounds[nextLayer].style.backgroundImage =
+        `url("${images[next]}")`;
+
+    backgrounds[nextLayer].classList.add("active");
+    backgrounds[layer].classList.remove("active");
+
+    current = next;
+    layer = nextLayer;
+}, 4000);
+</script>
+</body>
+</body>
+</html>
+
+
+
