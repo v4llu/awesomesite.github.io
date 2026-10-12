@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
+    // for winamp player
     <script src="https://unpkg.com/webamp@1.4.0/built/webamp.bundle.min.js"></script>
     <style>
 h1 {text-align: center;}
@@ -58,7 +59,7 @@ a {text-align: center;}
         a {
             transition: color 180ms ease, text-shadow 180ms ease;
         }
-
+        
         a:hover,
         a:focus-visible {
             color: #4da3ff;
@@ -79,7 +80,7 @@ a {text-align: center;}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-B/GM4XqrwHnWXNOWMbloTmrYXZg10cakYGmpfsR/bbzQ6JAJI4ihuyADKLnBgrCe" crossorigin="anonymous">
   </head>
   <body>
-
+// my-block for centered text
 <div class="my-block">
     <h1><b>Welcome to my webpage</b></h1>
     <p><b>Bootstrap Edition</b></p>
@@ -117,20 +118,20 @@ a {text-align: center;}
 	    <div id="winamp-container"></div>
     <script>
    const webamp = new Webamp({
-    // Optional.
+    // songs and theme
     initialTracks: [
         {
             metaData: {
-                artist: "Artist",
-                title: "Title",
+                artist: "roop",
+                title: "hope i dont (move chinapoet)",
             },
-            url: "URL TO SONG .mp3",
+            url: "./hopeidont.m4a",
         }, {
             metaData: {
-                artist: "Artist",
-                title: "Title",
+                artist: "Valery",
+                title: "Tell Me Right Now",
             },
-            url: "URL TO SONG .mp3",
+            url: "./TellMeRightNow.m4a",
         },
         {
             metaData: {
@@ -141,10 +142,25 @@ a {text-align: center;}
         },
       ],
     initialSkin: {
-        url: "./Bento_Classified.wsz"
+        url: "./Nice_Kitty_Photo.wsz"
     },
 });
     webamp.renderWhenReady(document.getElementById('winamp-container'));
+
+    // lock winamp so it cant be dragged around
+    let winampPointerIsDown = false;
+    document.addEventListener('mousedown', (event) => {
+        const player = document.getElementById('webamp');
+        winampPointerIsDown = Boolean(player && player.contains(event.target));
+    }, true);
+    document.addEventListener('mouseup', () => {
+        winampPointerIsDown = false;
+    }, true);
+    document.addEventListener('mousemove', (event) => {
+        if (winampPointerIsDown) {
+            event.stopImmediatePropagation();
+        }
+    }, true);
     </script>
     </div>
 </div>
