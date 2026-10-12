@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script src="https://unpkg.com/webamp@1.4.0/built/webamp.bundle.min.js"></script>
+    <style>
+h1 {text-align: center;}
+p {text-align: center; font-size: large;}
+div {text-align: center;}
+a {text-align: center;}
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+
+        body {
+            animation: page-fade-in 700ms ease-out both;
+        }
+
+        @keyframes page-fade-in {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .my-block {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100%;
+            padding: 2rem 1rem;
+            box-sizing: border-box;
+        }
+
+        .winamp-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            min-height: 300px;
+            margin-top: 2rem;
+        }
+
+        #winamp-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            margin: 0 auto;
+            text-align: left;
+        }
+
+        a {
+            transition: color 180ms ease, text-shadow 180ms ease;
+        }
+
+        a:hover,
+        a:focus-visible {
+            color: #4da3ff;
+            text-shadow: 0 0 8px rgba(77, 163, 255, 0.65);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            body,
+            a {
+                animation: none;
+                transition: none;
+            }
+        }
+</style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Awesome Site: Bootstrap Edition</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-B/GM4XqrwHnWXNOWMbloTmrYXZg10cakYGmpfsR/bbzQ6JAJI4ihuyADKLnBgrCe" crossorigin="anonymous">
+  </head>
+  <body>
+
+<div class="my-block">
+    <h1><b>Welcome to my webpage</b></h1>
+    <p><b>Bootstrap Edition</b></p>
+
+    <p>I make video with After Effects on YouTube</p>
+
+    <p>
+        <b>
+            <a  href="https://youtube.com/@indiahoodclips" target="_blank">
+                @indiahoodclips
+            </a>
+        </b>
+    </p>
+
+    <p>I make music with FL Studio on SoundCloud</p>
+
+    <p>
+        <b>
+            <a  href="https://soundcloud.com/dgfi" target="_blank">
+                dgfi
+            </a>
+        </b>
+    </p>
+
+        <p>My favorite animals are bunnies, Click below for a video of a bunny.</p>
+
+    <p>
+        <b>
+            <a href="https://www.youtube.com/watch?v=lLlrl8yvLIE" target="_blank">
+                Cute bunny eating dandelion flowers
+            </a>
+        </b>
+    </p>
+    <div class="winamp-wrapper">
+	    <div id="winamp-container"></div>
+    <script>
+   const webamp = new Webamp({
+    // Optional.
+    initialTracks: [
+        {
+            metaData: {
+                artist: "Artist",
+                title: "Title",
+            },
+            url: "URL TO SONG .mp3",
+        }, {
+            metaData: {
+                artist: "Artist",
+                title: "Title",
+            },
+            url: "URL TO SONG .mp3",
+        },
+        {
+            metaData: {
+                artist: "Yung Sherman",
+                title: "dont_go",
+            },
+            url: "./dont_go.m4a",
+        },
+      ],
+    initialSkin: {
+        url: "./Bento_Classified.wsz"
+    },
+});
+    webamp.renderWhenReady(document.getElementById('winamp-container'));
+    </script>
+    </div>
+</div>
+
+    <script type="module" src="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-1a/pXj49ZQ1aHEmrJ+gMw1otqoVsYwlEnlD8mIfY2TV03r20Y0CN7uqx1tQogjPL" crossorigin="anonymous"></script>
+  </body>
+</html>
