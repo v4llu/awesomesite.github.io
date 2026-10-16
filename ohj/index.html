@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<title>My Awesome Webpage</title>
+<html>
+<head>
+    <link rel="stylesheet" href="styles.css">
+<style>
+div {text-align: center;}
+a {text-align: center;}
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+
+        body {
+            display: table;
+        }
+
+            h1 {
+                text-align: center;
+            }
+
+            p {
+                text-align: left;
+                font-size: large;
+            }
+
+            .my-block {
+                text-align: left;
+                display: table-cell;
+                vertical-align: middle;
+                padding: 20px 40px;
+            }
+
+            .my-block h1 {
+                text-align: center;
+            }
+</style>
+</head>
+<body>
+<div class="background-slideshow">
+    <div class="background background1 active"></div>
+    <div class="background background2"></div>
+</div>
+
+<div class="my-block">
+    <h1><b>Etusivu</b></h1>
+
+    <p><b>Tutkinnon suorittaneen osaaminen</b></p>
+
+    <p>
+        Tieto- ja viestintätekniikan perustutkinnon suorittaneella on tieto- ja viestintätekniikan tehtävissä edellytetty ammattitaito,<br>
+        ja hän osaa toimia yhteistyökykyisesti tieto- ja viestintäteknisessä ympäristössä. Tutkinnon suorittanut osaa käyttää alan sanastoa,<br>
+        selvittää asiakkaan tarpeita ja tehdä asiakaslähtöisiä ratkaisuja tieto- ja viestintäteknisiin tehtäviin liittyen.<br>
+        Hän varmistaa, että työn lopputulos vastaa työlle asetettuja vaatimuksia.
+    </p>
+
+    <p><b>Tutkinnon suorittaneen osaaminen</b></p>
+
+
+    <p>
+        <b>Elektroniikka-asentaja</b> osaa tehdä elektroniikka-asennuksiin liittyviä asennus-, testaus- ja huoltotöitä.<br>
+        Hän osaa käsitellä oikein elektroniikka-asennuksissa tarvittavia komponentteja ja materiaaleja sekä käyttää tarvittavia työ- ja mittavälineitä.<br>
+        <b>Hyvinvointiteknologia-asentaja</b> osaa toimia sosiaali- ja terveysalan toimintaperiaatteiden ja arvojen mukaan.<br>
+        Hän osaa asentaa turvalaite- ja hyvinvointiteknologiajärjestelmiä sekä hyödyntää hyvinvointiteknologiaa asiakkaan toimintakyvyn ylläpitämiseksi.<br>
+        Hän varmistaa laitteiden turvallisen käytön ja opastaa asiakasta hyvinvointiteknologian käytössä.<br>
+        <b>Tietoverkkoasentaja</b> osaa tehdä tietoverkkokaapeloinnit asiakkaan vaatimusten ja ohjeiden mukaisesti.<br>
+        Hän huomioi tietoliikenneverkkojen rakenteet ja käytetyt materiaalit sekä tekee tarvittavia mittauksia ja testauksia järjestelmän toimivuuden varmistamiseksi.<br>
+        <b>IT-tukihenkilö</b> osaa toimia työasemien, verkko- ja lisälaitteiden sekä toimialueiden muodostamassa tieto- ja viestintäteknisessä ympäristössä.<br>
+        Hän toimii osana tietohallintoa sekä auttaa käyttäjiä erilaisissa teknisissä ongelmissa asiakkaan tiloissa tai etäyhteyden välityksellä.<br>
+        <b>Ohjelmistokehittäjä</b> osaa ohjelmoida, hyödyntää rajapintoja, käsitellä tietoa sekä käyttää versionhallintaa.<br>
+        Ohjelmistokehitystiimin jäsenenä toimiessaan hän kommunikoi asiakkaan kanssa, suunnittelee ohjelmiston toteutuksen ja varmistaa toteutettavien toimintojen laadun.<br>
+        Tieto- ja viestintätekniikan perustutkinnon rakenne ja sisältö on suunniteltu niin, että sähkö- ja<br>
+        automaatioalalla toimiminen -tutkinnon osan suorittaneella on rajoitettuun sähköpätevyyteen 3 määritelty soveltuva koulutus.
+    </p>
+</div>
+
+<script>
+const images = [
+    "background1.jpg",
+    "background2.jpg",
+    "background3.jpg",
+    "background4.jpg"
+];
+const backgrounds = document.querySelectorAll(".background");
+let current = 0;
+let layer = 0;
+backgrounds[0].style.backgroundImage = `url("${images[0]}")`;
+setInterval(() => {
+    const next = (current + 1) % images.length;
+    const nextLayer = (layer + 1) % backgrounds.length;
+
+    backgrounds[nextLayer].style.backgroundImage =
+        `url("${images[next]}")`;
+
+    backgrounds[nextLayer].classList.add("active");
+    backgrounds[layer].classList.remove("active");
+
+    current = next;
+    layer = nextLayer;
+}, 4000);
+</script>
+</body>
+</body>
+</html>
+
+
+
