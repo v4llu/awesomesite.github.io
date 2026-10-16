@@ -9,7 +9,38 @@ body {
     display: table;
     position: relative;
     background: black;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.site-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0.7rem clamp(1rem, 4vw, 4rem);
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(8px);
+}
+
+.site-nav a {
+    color: white;
+    padding: 0.45rem 0.7rem;
+    text-decoration: none;
+}
+
+.site-nav a:hover,
+.site-nav a:focus-visible {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 0.3rem;
+}
+
+.my-block {
+    padding-top: 6rem !important;
 }
 
 .background-slideshow {

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<title>Kriteerit</title>
+<html>
+<head>
+    <link rel="stylesheet" href="styles.css">
+<style>
+div {text-align: center;}
+a {text-align: center;}
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+
+        body {
+            display: table;
+        }
+
+            h1 {
+                text-align: center;
+            }
+
+            p {
+                text-align: left;
+                font-size: clamp(1.15rem, 1.4vw, 1.55rem);
+                line-height: 1.55;
+            }
+
+            .my-block {
+                text-align: left;
+                display: table-cell;
+                vertical-align: middle;
+                padding: 32px clamp(28px, 7vw, 120px);
+            }
+
+            .my-block h1 {
+                text-align: left;
+                font-size: clamp(2.25rem, 4vw, 4.5rem);
+                margin: 0 0 0.5em;
+            }
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Main navigation">
+    <a href="index.html">Etusivu</a>
+    <a href="tutkinnon-muodostuminen.html">Tutkinnon muodostuminen</a>
+    <a href="tutkinnonosat.html">Tutkinnonosat</a>
+    <a href="osaamisen-arviointi.html">Osaamisen arviointi</a>
+    <a href="kriteerit.html"><b>Kriteerit</b></a>
+</nav>
+<div class="background-slideshow">
+    <div class="background background1 active"></div>
+    <div class="background background2"></div>
+</div>
+
+<div class="my-block">
+    <h1><b>Kriteerit</b></h1>
+
+    <p><b>Tyydyttävä 1</b></p>
+
+    <p>
+        ● toteuttaa työn ohjeiden mukaisesti<br>
+	    ● toimii yhteistyökykyisesti<br>
+	    ● tarvitsee joissakin tilanteissa lisäohjeita<br>
+	    ● hyödyntää työssä tarvittavaa perustietoa<br>
+	    ● muuttaa toimintaansa saamansa palautteen mukaisesti
+    </p>
+
+    <p><b>Tyydyttävä 2</b></p>
+
+
+    <p>
+        ● toteuttaa työn oma-aloitteisesti ja ohjeiden mukaisesti<br>
+        ● toimii yhteistyökykyisesti ja vuorovaikutteisesti<br>
+        ● tarvitsee vain harvoissa tilanteissa lisäohjeita<br>
+        ● hyödyntää työssä tarvittavaa tietoa tarkoituksenmukaisesti<br>
+        ● muuttaa toimintaansa saamansa palautteen ja omien havaintojen mukaisesti
+    </p>
+
+        <p><b>Hyvä 3</b></p>
+
+
+    <p>
+        ● toteuttaa työkokonaisuuden itsenäisesti<br>
+        ● toimii yhteistyökykyisesti ja aloitteellisesti vuorovaikutustilanteissa<br>
+        ● selviytyy tavanomaisista ongelmanratkaisutilanteista<br>
+        ● hyödyntää työssä tarvittavaa tietoa monipuolisesti<br>
+        ● arvioi suoriutumistaan realistisesti
+    </p>
+
+        <p><b>Hyvä 4</b></p>
+
+
+    <p>
+        ● suunnittelee ja toteuttaa työkokonaisuuden itsenäisesti<br>
+        ● toimii yhteistyökykyisesti ja rakentavasti vuorovaikutustilanteissa<br>
+        ● selviytyy ongelmanratkaisutilanteista hyödyntäen monipuolisia ratkaisutapoja<br>
+        ● soveltaa työssä tarvittavaa tietoa monipuolisesti ja perustellusti<br>
+        ● arvioi suoriutumistaan realistisesti sekä tunnistaa vahvuuksiaan ja kehittämisen kohteitaan
+    </p>
+
+        <p><b>Kiitettävä 5</b></p>
+
+
+    <p>
+        ● suunnittelee ja toteuttaa työkokonaisuuden itsenäisesti ottaen huomioon muut toimijat<br>
+        ● toimii yhteistyökykyisesti ja rakentavasti haastavissakin vuorovaikutustilanteissa<br>
+        ● arvioi suoriutumistaan realistisesti sekä tunnistaa vahvuuksiaan ja kehittämisen kohteitaan<br>
+        ● soveltaa työssä tarvittavaa tietoa ongelmanratkaisutilanteissa monipuolisesti ja kriittisesti<br>
+        ● arvioi suoriutumistaan realistisesti ja esittää perusteltuja ratkaisuja osaamisensa kehittämiseen<br>
+        ● ymmärtää oman työnsä merkityksen osana laajempaa kokonaisuutta
+    </p>
+</div>
+
+<script>
+const images = [
+    "background1.jpg",
+    "background2.jpg",
+    "background3.jpg",
+    "background4.jpg"
+];
+const backgrounds = document.querySelectorAll(".background");
+let current = 0;
+let layer = 0;
+backgrounds[0].style.backgroundImage = `url("${images[0]}")`;
+setInterval(() => {
+    const next = (current + 1) % images.length;
+    const nextLayer = (layer + 1) % backgrounds.length;
+
+    backgrounds[nextLayer].style.backgroundImage =
+        `url("${images[next]}")`;
+
+    backgrounds[nextLayer].classList.add("active");
+    backgrounds[layer].classList.remove("active");
+
+    current = next;
+    layer = nextLayer;
+}, 4000);
+</script>
+</body>
+</body>
+</html>
+
+
+
