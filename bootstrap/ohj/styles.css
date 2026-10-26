@@ -1,0 +1,148 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+body {
+    display: table;
+    position: relative;
+    background: black;
+    overflow-y: auto;
+    overflow-x: hidden;
+    animation: page-fade-in 700ms ease-out both;
+            }
+
+        @keyframes page-fade-in {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+}
+
+.site-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0.7rem clamp(1rem, 4vw, 4rem);
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(8px);
+}
+
+.site-nav a {
+    color: white;
+    padding: 0.45rem 0.7rem;
+    text-decoration: none;
+}
+
+.site-nav a:hover,
+.site-nav a:focus-visible {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 0.3rem;
+}
+
+.my-block {
+    padding-top: 6rem !important;
+}
+
+.background-slideshow {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.background {
+    position: absolute;
+    inset: -20px;
+
+    background-size: cover;
+    background-position: center;
+
+    filter: blur(10px);
+    transform: scale(1.1);
+
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+}
+
+.background.active {
+    opacity: 1;
+}
+
+.background-slideshow::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.25);
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+
+    background: rgba(0, 0, 0, 0.25);
+}
+
+img {
+
+  object-fit: cover;
+}
+
+h1 {
+  color: white;
+  font-family: Arial;
+  text-shadow: 2px 2px black;
+}
+p {
+  color: white;
+  font-family: Arial;
+  text-shadow: 2px 2px black;
+}
+div {
+  color: white;
+  font-family: Arial;
+  text-shadow: 2px 2px black;
+}
+a {
+  font-family: Arial;
+  text-shadow: 2px 2px black;
+  transition: color 180ms ease, text-shadow 180ms ease;
+}
+a:hover,
+a:focus-visible {
+    color: #4da3ff;
+    text-shadow: 0 0 8px rgba(77, 163, 255, 0.65);
+}
+.rainbow {
+    animation: rainbow 2.5s linear infinite;
+    text-decoration: none;
+}
+
+@keyframes rainbow {
+    0%   { color: rgb(255, 0, 0); }
+    8%   { color: rgb(255, 127, 0); }
+    16%  { color: rgb(255, 255, 0); }
+    25%  { color: rgb(127, 255, 0); }
+    33%  { color: rgb(0, 255, 0); }
+    41%  { color: rgb(0, 255, 127); }
+    50%  { color: rgb(0, 255, 255); }
+    58%  { color: rgb(0, 127, 255); }
+    66%  { color: rgb(0, 0, 255); }
+    75%  { color: rgb(127, 0, 255); }
+    83%  { color: rgb(255, 0, 255); }
+    91%  { color: rgb(255, 0, 127); }
+    100% { color: rgb(255, 0, 0); }
+}
+
+
