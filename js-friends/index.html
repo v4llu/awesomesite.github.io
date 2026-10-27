@@ -907,6 +907,7 @@ FaZe Banks
       'icedancer', 'eversince', 'rainworld', 'fakeadministrator', 'troll'
     ]);
     const bannedUsernames = new Set(['yassir', 'hexagon', 'ollum', 'rapist', 'epstein', 'nigga', 'nigger', 'faggot', 'gook', 'tranny', 'rape', 'diddy', 'pyhe', 'tom nuke npc']);
+    const prohibitedSignupTerms = ['nigga', 'nigger', 'faggot', 'gook', 'tranny'];
 
     let selectedSignupPicture = 'icons/1.png';
 
@@ -999,6 +1000,11 @@ FaZe Banks
 
     function isValidUsername(name) {
       return /^[A-Za-z0-9 _-]{1,32}$/.test(name);
+    }
+
+    function containsProhibitedSignupTerm(name) {
+      const normalizedName = name.toLowerCase().replace(/[^a-z]/g, '');
+      return prohibitedSignupTerms.some((term) => normalizedName.includes(term));
     }
 
     function showFriendRequest() {
@@ -1253,6 +1259,11 @@ FaZe Banks
         showStatusNotification(friendMessage.textContent, 'w7/decline.png', requestDeclinedSound);
         return;
       }
+      if (containsProhibitedSignupTerm(typedName)) {
+        friendMessage.textContent = 'That username is not allowed.';
+        showStatusNotification(friendMessage.textContent, 'w7/decline.png', requestDeclinedSound);
+        return;
+      }
       const name = canonicalUsername(typedName);
       const requestKey = name.toLowerCase();
       if (requestKey === currentUsername.toLowerCase()) {
@@ -1315,6 +1326,10 @@ FaZe Banks
       }
       if (!isValidUsername(selectedUsername)) {
         signupMessage.textContent = 'Usernames can be up to 32 characters and use only letters, numbers, spaces, dashes, or underscores.';
+        return;
+      }
+      if (containsProhibitedSignupTerm(selectedUsername)) {
+        signupMessage.textContent = 'That username is not allowed.';
         return;
       }
       if (storedUsernameExists(selectedUsername)) {
