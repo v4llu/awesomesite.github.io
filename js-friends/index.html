@@ -63,6 +63,17 @@
     .screen { padding: 22px; }
     #startup-screen { color: white; text-align: center; background: linear-gradient(#4ba5dd, #0d5b9c); }
     .startup-logo { width: min(230px, 80%); margin: 18px 0; }
+    #save-slots { margin: 16px 0; }
+    #save-slots p { margin: 0 0 7px; }
+    .save-slot-row { display: flex; gap: 5px; margin: 5px 0; }
+    .save-slot { display: flex; flex: 1; align-items: center; gap: 7px; padding: 7px; border: 1px solid #b8e0fa; color: white; background: rgba(0, 63, 117, 0.6); cursor: pointer; text-align: left; }
+    .save-slot img { width: 28px; height: 28px; object-fit: cover; }
+    .save-slot:hover { background: rgba(38, 128, 188, 0.85); }
+    .save-slot.celebrity-slot { border-color: #ffe371; color: #fff5bd; background: linear-gradient(90deg, #8c5a00, #d99d1d); }
+    .delete-save { border: 1px solid #a32a2a; color: white; background: #7f1717; cursor: pointer; }
+    .logout-button { display: flex; align-items: center; gap: 4px; margin-left: auto; padding: 2px 8px; border: 1px solid #0a467c; border-radius: 2px; color: white; background: #a32929; font: inherit; font-size: 12px; cursor: pointer; }
+    .logout-button img { width: 14px; height: 14px; }
+    .logout-button[hidden] { display: none; }
     #signup-screen { color: #1e3f5d; }
     #signup-screen h1 { margin-top: 0; font-size: 22px; font-weight: normal; }
     #signup-screen label { display: block; margin: 12px 0 4px; font-size: 13px; }
@@ -298,15 +309,22 @@
     <div class="title-bar">
       <img class="title-icon" id="title-icon" src="w7/login.png" alt="" />
       <span id="window-title">Welcome</span>
+      <button class="logout-button" id="logout-button" type="button" hidden><img src="w7/logout.png" alt="" />Logout</button>
     </div>
     <audio id="startup-sound" src="startup.mp3" preload="auto"></audio>
     <audio id="signup-sound" src="signup.mp3" preload="auto"></audio>
+    <audio id="logout-sound" src="signout.mp3" preload="auto"></audio>
     <audio id="gangster-audio" src="gangster-audio.mp3" preload="auto"></audio>
     <audio id="xbox360-audio" src="xbox360-audio.mp3" preload="auto"></audio>
     <audio id="night-audio" src="night-audio.mp3" preload="auto"></audio>
     <section class="screen" id="startup-screen">
       <img class="startup-logo" src="friend7logo.png" alt="Friends List" />
       <p>Welcome to Friend7!</p>
+      <div id="save-slots">
+        <p>Choose a save slot</p>
+        <div id="save-slot-list"></div>
+      </div>
+      <p id="startup-message" aria-live="polite"></p>
       <button class="windows-button" id="start-friends-list" type="button">Start</button>
     </section>
     <section class="screen" id="signup-screen" hidden>
@@ -768,10 +786,13 @@ FaZe Banks
     const signupForm = document.querySelector('#signup-form');
     const startupScreen = document.querySelector('#startup-screen');
     const startFriendsListButton = document.querySelector('#start-friends-list');
+    const startupMessage = document.querySelector('#startup-message');
+    const saveSlotList = document.querySelector('#save-slot-list');
     const signupScreen = document.querySelector('#signup-screen');
     const friendsApp = document.querySelector('#friends-app');
     const titleIcon = document.querySelector('#title-icon');
     const windowTitle = document.querySelector('#window-title');
+    const logoutButton = document.querySelector('#logout-button');
     const signupName = document.querySelector('#signup-name');
     const signupMessage = document.querySelector('#signup-message');
     const signupPictureMenu = document.querySelector('#signup-picture');
@@ -800,6 +821,7 @@ FaZe Banks
     const themeFade = document.querySelector('#theme-fade');
     const startupSound = document.querySelector('#startup-sound');
     const signupSound = document.querySelector('#signup-sound');
+    const logoutSound = document.querySelector('#logout-sound');
     const gangsterAudio = document.querySelector('#gangster-audio');
     const xbox360Audio = document.querySelector('#xbox360-audio');
     const nightAudio = document.querySelector('#night-audio');
@@ -927,32 +949,188 @@ FaZe Banks
     let pendingRequest = null;
     let notificationSoundUnlocked = false;
     let currentUsername = '';
+    let currentBio = '';
     let celebrityMode = false;
     let totalXp = 0;
     let levelInfo = null;
+    let activeSaveSlot = null;
+    let sessionActive = false;
+    let friendRequestTimer = null;
     const outgoingRequests = new Set();
 
-    celebrityModeButton.addEventListener('click', () => {
-      celebrityMode = !celebrityMode;
+    function saveKey(slot) {
+      return `friend7-save-slot-${slot}`;
+    }
+
+    function readSaveSlot(slot) {
+      try {
+        const saved = localStorage.getItem(saveKey(slot));
+        return saved ? JSON.parse(saved) : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function renderSaveSlots() {
+      saveSlotList.innerHTML = '';
+      for (let slot = 1; slot <= 3; slot += 1) {
+        const saved = readSaveSlot(slot);
+        const row = document.createElement('div');
+        const button = document.createElement('button');
+        const icon = document.createElement('img');
+        const label = document.createElement('span');
+        row.className = 'save-slot-row';
+        button.className = 'save-slot';
+        button.type = 'button';
+        icon.src = saved?.profilePicture || 'icons/1.png';
+        icon.alt = '';
+        label.textContent = saved ? `Slot ${slot}: ${saved.username}` : `Slot ${slot}: New profile`;
+        button.append(icon, label);
+        if (saved?.celebrityMode) button.classList.add('celebrity-slot');
+        button.addEventListener('click', () => {
+          if (saved) loadSaveSlot(slot);
+          else {
+            beginNewSave(slot);
+            enterSignup();
+          }
+        });
+        row.append(button);
+        if (saved) {
+          const deleteButton = document.createElement('button');
+          deleteButton.className = 'delete-save';
+          deleteButton.type = 'button';
+          deleteButton.textContent = 'Delete';
+          deleteButton.addEventListener('click', () => {
+            if (!window.confirm(`Delete save slot ${slot}?`)) return;
+            localStorage.removeItem(saveKey(slot));
+            renderSaveSlots();
+          });
+          row.append(deleteButton);
+        }
+        saveSlotList.append(row);
+      }
+    }
+
+    function saveProgress() {
+      if (!activeSaveSlot || !currentUsername) return;
+      const saveData = {
+        xp: totalXp,
+        profilePicture: selectedSignupPicture,
+        friends,
+        achievements: [...unlockedAchievements],
+        bio: currentBio,
+        username: currentUsername,
+        celebrityMode,
+        theme: themeSelect.value
+      };
+      try {
+        localStorage.setItem(saveKey(activeSaveSlot), JSON.stringify(saveData));
+        renderSaveSlots();
+      } catch {
+        // Browser storage may be unavailable in private/restricted sessions.
+      }
+    }
+
+    function setCelebrityMode(enabled) {
+      celebrityMode = enabled;
       document.body.classList.toggle('celebrity-mode-active', celebrityMode);
       celebrityModeButton.classList.toggle('active', celebrityMode);
       celebrityModeButton.setAttribute('aria-pressed', celebrityMode);
       celebrityModeButton.textContent = celebrityMode ? 'Celebrity Mode: On' : 'Celebrity Mode';
+    }
+
+    function renderCurrentProfile() {
+      const profilePicture = document.createElement('img');
+      const profileText = document.createElement('div');
+      const profileTitle = document.createElement('strong');
+      const profileBio = document.createElement('p');
+      profilePicture.src = selectedSignupPicture;
+      profilePicture.alt = `${currentUsername}'s profile picture`;
+      profileTitle.textContent = currentUsername;
+      if (celebrityMode) profileTitle.classList.add('rare-name');
+      profileBio.textContent = currentBio || 'No bio yet.';
+      profileText.append(profileTitle, profileBio);
+      myProfile.replaceChildren(profilePicture, profileText);
+      myProfile.hidden = false;
+      levelInfo = { label: levelLabel, fill: xpBarFill };
+      levelDisplay.hidden = false;
+      updateLevelDisplay();
+    }
+
+    function enterSignup() {
+      startupSound.currentTime = 0;
+      startupSound.play().catch(() => {});
+      startupScreen.hidden = true;
+      signupScreen.hidden = false;
+      windowTitle.textContent = 'Sign Up';
+    }
+
+    function beginNewSave(slot) {
+      activeSaveSlot = slot;
+      totalXp = 0;
+      currentUsername = '';
+      currentBio = '';
+      selectedSignupPicture = 'icons/1.png';
+      unlockedAchievements.clear();
+      friends.splice(0, friends.length, { name: 'Random Kid', picture: 'icons/special/randomkid.png' });
+      setCelebrityMode(false);
+      themeSelect.value = 'original';
+      applyTheme('original', false);
+    }
+
+    function openFriendsApp() {
+      sessionActive = true;
+      signupScreen.hidden = true;
+      startupScreen.hidden = true;
+      friendsApp.hidden = false;
+      showAchievementsButton.hidden = false;
+      showThemesButton.hidden = false;
+      logoutButton.hidden = false;
+      titleIcon.src = 'w7/network.png';
+      windowTitle.textContent = 'Friends List';
+      renderCurrentProfile();
+      renderFriends();
+      loadUsernames();
+      scheduleFriendRequest();
+    }
+
+    function loadSaveSlot(slot) {
+      const saved = readSaveSlot(slot);
+      if (!saved) return;
+      signupSound.currentTime = 0;
+      signupSound.play().catch(() => {});
+      activeSaveSlot = slot;
+      totalXp = saved.xp || 0;
+      currentUsername = saved.username || '';
+      currentBio = saved.bio || '';
+      selectedSignupPicture = saved.profilePicture || 'icons/1.png';
+      friends.splice(0, friends.length, ...(Array.isArray(saved.friends) ? saved.friends : []));
+      unlockedAchievements.clear();
+      (saved.achievements || []).forEach((achievement) => unlockedAchievements.add(achievement));
+      setCelebrityMode(Boolean(saved.celebrityMode));
+      themeSelect.value = saved.theme || 'original';
+      applyTheme(themeSelect.value, false);
+      openFriendsApp();
+    }
+
+    celebrityModeButton.addEventListener('click', () => {
+      setCelebrityMode(!celebrityMode);
+      saveProgress();
     });
 
-    function applyTheme(theme) {
+    function applyTheme(theme, playAudio = true, persist = true) {
       const gangsterEdition = theme === 'gangster';
       const xbox360Edition = theme === 'xbox360';
       const nightEdition = theme === 'night';
-      if (gangsterEdition) {
+      if (gangsterEdition && playAudio) {
         gangsterAudio.currentTime = 0;
         gangsterAudio.play().catch(() => {});
       }
-      if (xbox360Edition) {
+      if (xbox360Edition && playAudio) {
         xbox360Audio.currentTime = 0;
         xbox360Audio.play().catch(() => {});
       }
-      if (nightEdition) {
+      if (nightEdition && playAudio) {
         nightAudio.currentTime = 0;
         nightAudio.play().catch(() => {});
       }
@@ -961,6 +1139,7 @@ FaZe Banks
         document.body.classList.toggle('gangster-edition', gangsterEdition);
         document.body.classList.toggle('xbox360-edition', xbox360Edition);
         document.body.classList.toggle('night-edition', nightEdition);
+        if (persist) saveProgress();
         window.setTimeout(() => themeFade.classList.remove('active'), 50);
       }, 250);
     }
@@ -1046,11 +1225,13 @@ FaZe Banks
     document.addEventListener('keydown', unlockNotificationSound, { once: true });
 
     startFriendsListButton.addEventListener('click', () => {
-      startupSound.currentTime = 0;
-      startupSound.play().catch(() => {});
-      startupScreen.hidden = true;
-      signupScreen.hidden = false;
-      windowTitle.textContent = 'Sign Up';
+      const emptySlot = [1, 2, 3].find((slot) => !readSaveSlot(slot));
+      if (!emptySlot) {
+        startupMessage.textContent = 'Choose an existing save slot to continue.';
+        return;
+      }
+      beginNewSave(emptySlot);
+      enterSignup();
     });
 
     function loadUsernames() {
@@ -1089,6 +1270,7 @@ FaZe Banks
     function gainXp(amount) {
       totalXp += amount * (celebrityMode ? 10 : 1);
       updateLevelDisplay();
+      saveProgress();
     }
 
     function isValidUsername(name) {
@@ -1101,7 +1283,7 @@ FaZe Banks
     }
 
     function showFriendRequest() {
-      if (!usernames.length || pendingRequest) return;
+      if (!sessionActive || !usernames.length || pendingRequest) return;
 
       const eligibleUsernames = usernames.filter((name) => !isAlreadyFriend(name));
       if (!eligibleUsernames.length) return;
@@ -1174,10 +1356,12 @@ FaZe Banks
     }
 
     function scheduleFriendRequest() {
+      if (!sessionActive) return;
       const waitTime = celebrityMode
         ? 1000 + Math.random() * 2000
         : 10000 + Math.random() * 50000;
-      window.setTimeout(() => {
+      friendRequestTimer = window.setTimeout(() => {
+        if (!sessionActive) return;
         if (Math.random() < (celebrityMode ? 1 : 0.6)) {
           showFriendRequest();
         } else {
@@ -1225,6 +1409,7 @@ FaZe Banks
       showAchievement('Achievement unlocked!', `${milestone} friends added`, achievementIcons[milestone], isSpecialMilestone);
       if (isSpecialMilestone) flashRareAcceptance();
       renderAchievements();
+      saveProgress();
     }
 
     function showAchievement(titleText, descriptionText, iconPath, isSpecial = false) {
@@ -1254,6 +1439,7 @@ FaZe Banks
       unlockedAchievements.add(id);
       showAchievement(achievement.title, achievement.description, achievement.icon, true);
       renderAchievements();
+      saveProgress();
     }
 
     function renderAchievements() {
@@ -1306,6 +1492,7 @@ FaZe Banks
       if (friends.length === 0) {
         list.innerHTML = '<li class="empty">Your friends list is empty.</li>';
         renderAchievements();
+        saveProgress();
         return;
       }
 
@@ -1333,6 +1520,7 @@ FaZe Banks
         list.append(item);
       });
       renderAchievements();
+      saveProgress();
     }
 
     showAchievementsButton.addEventListener('click', () => {
@@ -1348,6 +1536,26 @@ FaZe Banks
     themeSelect.addEventListener('change', () => {
       applyTheme(themeSelect.value);
       themesMenu.hidden = true;
+    });
+    logoutButton.addEventListener('click', () => {
+      saveProgress();
+      sessionActive = false;
+      if (friendRequestTimer) window.clearTimeout(friendRequestTimer);
+      pendingRequest = null;
+      requestArea.innerHTML = '';
+      friendsApp.hidden = true;
+      showAchievementsButton.hidden = true;
+      showThemesButton.hidden = true;
+      themesMenu.hidden = true;
+      logoutButton.hidden = true;
+      startupScreen.hidden = false;
+      titleIcon.src = 'w7/login.png';
+      windowTitle.textContent = 'Welcome';
+      logoutSound.currentTime = 0;
+      logoutSound.play().catch(() => {});
+      themeSelect.value = 'original';
+      applyTheme('original', false, false);
+      renderSaveSlots();
     });
 
     form.addEventListener('submit', (event) => {
@@ -1441,32 +1649,13 @@ FaZe Banks
       unlockNotificationSound();
       signupSound.currentTime = 0;
       signupSound.play().catch(() => {});
-      const profileName = signupName.value.trim();
-      const profilePicture = document.createElement('img');
-      const profileText = document.createElement('div');
-      const profileTitle = document.createElement('strong');
-      const profileBio = document.createElement('p');
-      profilePicture.src = selectedSignupPicture;
-      profilePicture.alt = `${profileName}'s profile picture`;
-      profileTitle.textContent = profileName;
-      if (celebrityMode) profileTitle.classList.add('rare-name');
-      profileBio.textContent = signupBio.value.trim() || 'No bio yet.';
-      profileText.append(profileTitle, profileBio);
-      myProfile.replaceChildren(profilePicture, profileText);
-      myProfile.hidden = false;
-      levelInfo = { label: levelLabel, fill: xpBarFill };
-      levelDisplay.hidden = false;
-      updateLevelDisplay();
-      signupScreen.hidden = true;
-      friendsApp.hidden = false;
-      showAchievementsButton.hidden = false;
-      showThemesButton.hidden = false;
-      titleIcon.src = 'w7/network.png';
-      windowTitle.textContent = 'Friends List';
-      renderFriends();
-      loadUsernames();
-      scheduleFriendRequest();
+      currentBio = signupBio.value.trim();
+      if (!activeSaveSlot) activeSaveSlot = [1, 2, 3].find((slot) => !readSaveSlot(slot)) || 1;
+      openFriendsApp();
+      saveProgress();
     });
+
+    renderSaveSlots();
   </script>
 </body>
 </html>
