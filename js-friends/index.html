@@ -110,6 +110,7 @@
     #friends-app .screen { background: url('ui-bg.jpg') center / cover; background-blend-mode: multiply; }
     #friends-app .screen { background-color: rgba(20, 20, 20, 0.72); }
     #friends-app h1 { margin-top: 0; }
+    #friends-app .screen { text-shadow: 0 0 5px #000; }
     #friends-app input { color: black; }
     .profile { display: flex; align-items: center; gap: 10px; margin: 0 0 18px; }
     .profile img { width: 52px; height: 52px; object-fit: cover; }
@@ -213,6 +214,13 @@
     body.night-edition #friends-app, body.night-edition #friends-app .screen { background: url('night-ui-bg.jpg') center / cover; background-color: transparent; }
     body.night-edition .xp-bar { border-color: #aaa; background: #222; filter: grayscale(1); }
     body.night-edition .xp-bar-fill { background: linear-gradient(90deg, #ddd, #666); }
+    body.steam-edition { font-family: Arial, sans-serif; }
+    body.steam-edition::before { background-image: url('steam-bg.jpg'); }
+    body.steam-edition main, body.steam-edition .achievements-window { border-color: #1b2838; }
+    body.steam-edition .title-bar { background: linear-gradient(#263b52, #1b2838 48%, #101923); text-shadow: 1px 1px #000; }
+    body.steam-edition #friends-app, body.steam-edition #friends-app .screen { background: url('steam-ui-bg.png') center / cover; background-color: transparent; }
+    body.steam-edition .xp-bar { border-color: #3b6280; background: #142333; }
+    body.steam-edition .xp-bar-fill { background: linear-gradient(90deg, #66c0f4, #3b7da7); }
     #boot-fade {
       position: fixed;
       inset: 0;
@@ -317,6 +325,7 @@
     <audio id="gangster-audio" src="gangster-audio.mp3" preload="auto"></audio>
     <audio id="xbox360-audio" src="xbox360-audio.mp3" preload="auto"></audio>
     <audio id="night-audio" src="night-audio.mp3" preload="auto"></audio>
+    <audio id="steam-audio" src="steam-audio.mp3" preload="auto"></audio>
     <section class="screen" id="startup-screen">
       <img class="startup-logo" src="friend7logo.png" alt="Friends List" />
       <p>Welcome to Friend7!</p>
@@ -792,6 +801,7 @@ Masleana
       <option value="gangster">Gangster Edition</option>
       <option value="xbox360">Xbox 360</option>
       <option value="night">Night</option>
+      <option value="steam">Steam</option>
     </select>
   </div>
   </div>
@@ -840,6 +850,7 @@ Masleana
     const gangsterAudio = document.querySelector('#gangster-audio');
     const xbox360Audio = document.querySelector('#xbox360-audio');
     const nightAudio = document.querySelector('#night-audio');
+    const steamAudio = document.querySelector('#steam-audio');
     const notificationSound = document.querySelector('#notification-sound');
     const achievementSound = document.querySelector('#achievement-sound');
     const specialAchievementSound = document.querySelector('#special-achievement-sound');
@@ -1108,6 +1119,7 @@ Masleana
       windowTitle.textContent = 'Friends List';
       renderCurrentProfile();
       renderFriends();
+      checkForTampering();
       loadUsernames();
       scheduleFriendRequest();
     }
@@ -1140,6 +1152,11 @@ Masleana
       const gangsterEdition = theme === 'gangster';
       const xbox360Edition = theme === 'xbox360';
       const nightEdition = theme === 'night';
+      const steamEdition = theme === 'steam';
+      [gangsterAudio, xbox360Audio, nightAudio, steamAudio].forEach((audio) => {
+        audio.pause();
+        audio.currentTime = 0;
+      });
       if (gangsterEdition && playAudio) {
         gangsterAudio.currentTime = 0;
         gangsterAudio.play().catch(() => {});
@@ -1152,16 +1169,32 @@ Masleana
         nightAudio.currentTime = 0;
         nightAudio.play().catch(() => {});
       }
+      if (steamEdition && playAudio) {
+        steamAudio.currentTime = 0;
+        steamAudio.play().catch(() => {});
+      }
       themeFade.classList.add('active');
       window.setTimeout(() => {
         document.body.classList.toggle('gangster-edition', gangsterEdition);
         document.body.classList.toggle('xbox360-edition', xbox360Edition);
         document.body.classList.toggle('night-edition', nightEdition);
+        document.body.classList.toggle('steam-edition', steamEdition);
         if (persist) saveProgress();
         window.setTimeout(() => themeFade.classList.remove('active'), 50);
       }, 250);
     }
     const achievementMilestones = [10, 20, 50, 100, 200, 500, 1000];
+    const xpRewards = Object.freeze({
+      sentRequest: 5,
+      receivedRequest: 5,
+      rareReceivedRequest: 40,
+      acceptedRequest: 20,
+      acceptedRareRequest: 80
+    });
+    const expectedRulesSignature = JSON.stringify({
+      xpRewards: { sentRequest: 5, receivedRequest: 5, rareReceivedRequest: 40, acceptedRequest: 20, acceptedRareRequest: 80 },
+      milestones: [10, 20, 50, 100, 200, 500, 1000]
+    });
     const achievementIcons = Object.fromEntries(
       achievementMilestones.map((amount) => [amount, `achievements/${amount}friends.png`])
     );
@@ -1183,6 +1216,12 @@ Masleana
       title: 'Not getting banned!',
       description: "Accept the Administrator's Friend Request",
       icon: 'achievements/admin.png'
+    }, {
+      id: 'cheater',
+      hidden: true,
+      title: 'The admins hate you!',
+      description: '!ban you',
+      icon: 'achievements/hacker.png'
     }];
     const unlockedAchievements = new Set();
     // Add lowercase usernames here when they should reject every friend request.
@@ -1287,9 +1326,17 @@ Masleana
     }
 
     function gainXp(amount) {
+      checkForTampering();
       totalXp += amount * (celebrityMode ? 10 : 1);
       updateLevelDisplay();
       saveProgress();
+    }
+
+    function checkForTampering() {
+      const currentRulesSignature = JSON.stringify({ xpRewards, milestones: achievementMilestones });
+      if (currentRulesSignature !== expectedRulesSignature) {
+        unlockSpecialAchievement('cheater');
+      }
     }
 
     function isValidUsername(name) {
@@ -1311,8 +1358,8 @@ Masleana
       const requestIndex = usernames.indexOf(name);
       usernames.splice(requestIndex, 1);
       pendingRequest = { name, picture: profilePictureFor(name) };
-      gainXp(5);
-      if (isRareUser(name)) gainXp(40);
+      gainXp(xpRewards.receivedRequest);
+      if (isRareUser(name)) gainXp(xpRewards.rareReceivedRequest);
       requestArea.innerHTML = '';
 
       const message = document.createElement('span');
@@ -1350,7 +1397,7 @@ Masleana
         if (requestAchievement) unlockSpecialAchievement(requestAchievement.id);
         const acceptanceSound = isRareUser(acceptedName) ? rareRequestAcceptedSound : requestAcceptedSound;
         if (isRareUser(acceptedName)) {
-          gainXp(80);
+          gainXp(xpRewards.acceptedRareRequest);
           flashRareAcceptance();
         }
         showStatusNotification(`You accepted ${acceptedName}'s friend request.`, 'w7/accept.png', acceptanceSound);
@@ -1461,6 +1508,9 @@ Masleana
       saveProgress();
     }
 
+    // Deliberately not exposed in the interface: this is the cheat-only unlock.
+    window.friend7Cheat = () => unlockSpecialAchievement('cheater');
+
     function renderAchievements() {
       achievementsList.innerHTML = '';
       const nextMilestone = achievementMilestones.find((amount) => friends.length < amount);
@@ -1495,8 +1545,8 @@ Masleana
         item.className = `achievement-item${unlocked ? '' : ' locked'}`;
         icon.src = achievement.icon;
         icon.alt = '';
-        title.textContent = achievement.title;
-        description.textContent = unlocked ? 'Unlocked' : achievement.description;
+        title.textContent = achievement.hidden && !unlocked ? 'Hidden achievement' : achievement.title;
+        description.textContent = achievement.hidden && !unlocked ? 'Keep playing to discover it.' : (unlocked ? 'Unlocked' : achievement.description);
         text.append(title, description);
         item.append(icon, text);
         achievementsList.append(item);
@@ -1620,7 +1670,7 @@ Masleana
       }
 
       outgoingRequests.add(requestKey);
-      gainXp(5);
+      gainXp(xpRewards.sentRequest);
       friendMessage.textContent = `Friend request sent to ${name}.`;
       showStatusNotification(friendMessage.textContent, 'w7/info.png', requestSentSound);
       input.value = '';
@@ -1631,7 +1681,7 @@ Masleana
         outgoingRequests.delete(requestKey);
         if (Math.random() < 0.65) {
           friends.push({ name, picture: profilePictureFor(name) });
-          gainXp(20);
+          gainXp(xpRewards.acceptedRequest);
           friendMessage.textContent = `${name} accepted your friend request.`;
           renderFriends();
           const acceptanceSound = isRareUser(name) ? rareRequestAcceptedSound : requestAcceptedSound;
