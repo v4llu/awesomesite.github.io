@@ -1,0 +1,1356 @@
+<!doctype html>
+<html lang="en">
+    <title>Friend7</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Friends List</title>
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: -8px;
+      z-index: -1;
+      background: url('background.jpg') center / cover no-repeat;
+      filter: blur(4px);
+    }
+    body.rare-flash::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      pointer-events: none;
+      background: rgba(255, 215, 86, 0.4);
+      animation: rare-flash 500ms ease-out forwards;
+    }
+    @keyframes rare-flash {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    main {
+      width: 100%;
+      overflow: hidden;
+      border: 1px solid #0b5394;
+      border-radius: 7px;
+      background: #f4f8fc;
+      box-shadow: 0 0 18px rgba(0, 0, 0, 0.75);
+    }
+    .title-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      color: white;
+      background: linear-gradient(#62b6ee, #1875bd 48%, #0d5b9c);
+      font-size: 14px;
+      font-weight: bold;
+      text-shadow: 1px 1px #124b78;
+    }
+    .title-icon { width: 16px; height: 16px; }
+    .heading-icon { width: 24px; height: 24px; margin-right: 7px; vertical-align: middle; }
+    .button-icon { width: 14px; height: 14px; margin-right: 4px; vertical-align: text-bottom; }
+    .request-icon { width: 16px; height: 16px; margin-right: 5px; vertical-align: text-bottom; }
+    .request-actions { margin-top: 7px; }
+    .screen { padding: 22px; }
+    #startup-screen { color: white; text-align: center; background: linear-gradient(#4ba5dd, #0d5b9c); }
+    .startup-logo { width: min(230px, 80%); margin: 18px 0; }
+    #signup-screen { color: #1e3f5d; }
+    #signup-screen h1 { margin-top: 0; font-size: 22px; font-weight: normal; }
+    #signup-screen label { display: block; margin: 12px 0 4px; font-size: 13px; }
+    #signup-screen input, #signup-screen textarea { width: 100%; box-sizing: border-box; padding: 6px; }
+    #signup-screen textarea { resize: none; }
+    #signup-preview { width: 48px; height: 48px; margin-top: 8px; vertical-align: middle; object-fit: cover; }
+    .picture-menu {
+      display: grid;
+      grid-template-columns: repeat(8, 34px);
+      gap: 4px;
+      max-height: 180px;
+      padding: 2px;
+      overflow-y: auto;
+    }
+    .picture-choice { padding: 2px; border: 1px solid transparent; background: transparent; cursor: pointer; }
+    .picture-choice img { display: block; width: 28px; height: 28px; object-fit: cover; }
+    .picture-choice.selected { border-color: #287fbd; background: #d9effc; }
+    .windows-button {
+      margin-top: 18px;
+      padding: 5px 18px;
+      border: 1px solid #2b6eab;
+      border-radius: 3px;
+      color: white;
+      background: linear-gradient(#76c2f2, #287fbd);
+      box-shadow: inset 0 1px rgba(255, 255, 255, 0.55);
+      cursor: pointer;
+    }
+    .windows-button:hover { background: linear-gradient(#8bd1fa, #3d91ca); }
+    .windows-button.active { border-color: #f8d45d; background: linear-gradient(#f4ce58, #a66b06); }
+    body.celebrity-mode-active main, body.celebrity-mode-active .achievements-window { border-color: #d59a20; }
+    body.celebrity-mode-active .title-bar { background: linear-gradient(#ffe991, #c98b16 48%, #8e5600); text-shadow: 1px 1px #704400; }
+    #friends-app { color: white; background: rgba(20, 20, 20, 0.72); }
+    #friends-app[hidden], #signup-screen[hidden], #startup-screen[hidden] { display: none; }
+    #friends-app .screen { background: url('ui-bg.jpg') center / cover; background-blend-mode: multiply; }
+    #friends-app .screen { background-color: rgba(20, 20, 20, 0.72); }
+    #friends-app h1 { margin-top: 0; }
+    #friends-app input { color: black; }
+    .profile { display: flex; align-items: center; gap: 10px; margin: 0 0 18px; }
+    .profile img { width: 52px; height: 52px; object-fit: cover; }
+    .profile p { margin: 3px 0 0; }
+    .level-info { margin: 0 0 8px; font-size: 12px; }
+    .xp-bar { width: 150px; height: 8px; margin-top: 3px; border: 1px solid #143d5c; background: #091c2a; }
+    .xp-bar-fill { height: 100%; background: linear-gradient(90deg, #62d5ff, #2176c1); transition: width 200ms ease; }
+    #achievement-area {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    #status-area {
+      position: fixed;
+      left: 18px;
+      bottom: 18px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .status-popup {
+      display: flex;
+      align-items: center;
+      width: 240px;
+      padding: 10px 12px;
+      border: 1px solid #2b6eab;
+      color: #163d5c;
+      background: #eaf6ff;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+      animation: status-slide 4s ease-in-out forwards;
+    }
+    .status-popup img { width: 20px; height: 20px; margin-right: 8px; }
+    @keyframes status-slide {
+      0%, 100% { opacity: 0; transform: translateY(80px); }
+      12%, 88% { opacity: 1; transform: translateY(0); }
+    }
+    .achievements-button {
+      position: absolute;
+      top: 50%;
+      left: calc(100% + 18px);
+      transform: translateY(-50%);
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      width: 74px;
+      margin: 4px 0;
+      padding: 4px;
+      border: 1px solid transparent;
+      color: white;
+      background: transparent;
+      font: inherit;
+      font-size: 12px;
+      text-shadow: 1px 1px #000;
+      cursor: pointer;
+    }
+    .achievements-button[hidden] { display: none; }
+    .friends-shell { position: relative; }
+    .friends-shell { width: min(440px, calc(100% - 32px)); }
+    #boot-fade {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none;
+      background: #000;
+      animation: boot-fade 1.2s ease-out forwards;
+    }
+    @keyframes boot-fade {
+      to { opacity: 0; visibility: hidden; }
+    }
+    .achievements-button img { width: 40px; height: 40px; margin-bottom: 3px; }
+    .achievements-button:hover, .achievements-button:focus-visible { border-color: #8bc9f1; background: rgba(77, 157, 213, 0.45); outline: none; }
+    #achievements-panel[hidden] { display: none; }
+    #achievements-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 3;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.45);
+    }
+    .achievements-window {
+      width: min(380px, 100%);
+      overflow: hidden;
+      border: 1px solid #0b5394;
+      border-radius: 7px;
+      background: #eef6fc;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.65);
+    }
+    .achievements-content { padding: 16px; color: #183e5d; }
+    .achievements-content h2 { margin: 0 0 8px; font-size: 19px; }
+    #achievements-list { display: grid; gap: 7px; max-height: 300px; overflow-y: auto; }
+    .achievement-item { display: flex; align-items: center; gap: 8px; padding: 7px; border: 1px solid #b7cddd; background: white; }
+    .achievement-item img { width: 30px; height: 30px; }
+    .achievement-item.locked { opacity: 0.5; }
+    .achievement-item.locked img { filter: grayscale(1); }
+    .achievement-item.special:not(.locked) { border-color: #d6a526; box-shadow: 0 0 7px rgba(230, 181, 46, 0.75); }
+    .achievement-item small { display: block; }
+    .achievement-popup {
+      display: flex;
+      align-items: center;
+      width: 260px;
+      padding: 12px;
+      border: 1px solid #6c9fca;
+      color: white;
+      background: linear-gradient(#29465d, #152a3a);
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.55);
+      animation: achievement-slide 4s ease-in-out forwards;
+    }
+    .achievement-popup img { width: 42px; height: 42px; margin-right: 10px; }
+    .achievement-popup.special { border-color: #ffd45c; box-shadow: 0 0 18px #e6b52e, 0 3px 12px rgba(0, 0, 0, 0.55); }
+    .achievement-popup strong, .achievement-popup span { display: block; }
+    .achievement-popup span { margin-top: 3px; font-size: 13px; }
+    @keyframes achievement-slide {
+      0%, 100% { opacity: 0; transform: translateY(120px); }
+      12%, 88% { opacity: 1; transform: translateY(0); }
+    }
+    input { color: black; }
+    li { margin: 6px 0; }
+    .profile-picture { width: 40px; height: 40px; margin-right: 8px; vertical-align: middle; object-fit: cover; }
+    .rare-name {
+      font-weight: bold;
+      color: #ffd34d;
+      background: linear-gradient(#fff6b5, #f2bd22 48%, #fff1a0);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 5px rgba(255, 201, 45, 0.8);
+    }
+    .remove { margin-left: 8px; }
+    #friend-request { margin: 16px 0; }
+  </style>
+</head>
+<body>
+  <div id="boot-fade" aria-hidden="true"></div>
+  <div id="achievement-area" aria-live="polite"></div>
+  <div id="status-area" aria-live="polite"></div>
+  <div id="achievements-panel" hidden>
+    <section class="achievements-window" role="dialog" aria-modal="true" aria-labelledby="achievements-title">
+      <div class="title-bar"><img class="title-icon" src="w7/friends.png" alt="" />Achievements</div>
+      <div class="achievements-content">
+        <h2 id="achievements-title">Friendship achievements</h2>
+        <p id="achievement-progress"></p>
+        <div id="achievements-list"></div>
+        <button class="windows-button" id="close-achievements" type="button">Close</button>
+      </div>
+    </section>
+  </div>
+  <div class="friends-shell">
+  <main>
+    <div class="title-bar">
+      <img class="title-icon" id="title-icon" src="w7/login.png" alt="" />
+      <span id="window-title">Welcome</span>
+    </div>
+    <audio id="startup-sound" src="startup.mp3" preload="auto"></audio>
+    <audio id="signup-sound" src="signup.mp3" preload="auto"></audio>
+    <section class="screen" id="startup-screen">
+      <img class="startup-logo" src="friend7logo.png" alt="Friends List" />
+      <p>Welcome to Friend7!</p>
+      <button class="windows-button" id="start-friends-list" type="button">Start</button>
+    </section>
+    <section class="screen" id="signup-screen" hidden>
+      <h1>Create your account</h1>
+      <p>Sign up to start using Friends List.</p>
+      <form id="signup-form">
+        <label for="signup-name">Display name</label>
+        <input id="signup-name" type="text" autocomplete="name" maxlength="32" pattern="[A-Za-z0-9 _-]+" required />
+        <p id="signup-message" aria-live="polite"></p>
+        <label for="signup-picture">Profile picture</label>
+        <div class="picture-menu" id="signup-picture" aria-label="Choose a profile picture"></div>
+        <img id="signup-preview" alt="Selected profile picture" />
+        <label for="signup-bio">Bio</label>
+        <textarea id="signup-bio" rows="3" maxlength="120" placeholder="Tell your friends about yourself"></textarea>
+        <button class="windows-button" id="celebrity-mode" type="button" aria-pressed="false">Celebrity Mode</button>
+        <button class="windows-button" type="submit">Sign up</button>
+      </form>
+    </section>
+
+    <section id="friends-app" hidden>
+      <div class="screen">
+        <h1><img class="heading-icon" src="w7/friends.png" alt="" />Friends List</h1>
+        <p class="subtitle">Add someone to your list, or remove them anytime.</p>
+        <audio id="notification-sound" src="notification.mp3" preload="auto"></audio>
+        <audio id="achievement-sound" src="achievement.mp3" preload="auto"></audio>
+        <audio id="special-achievement-sound" src="special-achievement.mp3" preload="auto"></audio>
+        <audio id="request-sent-sound" src="request-sent.mp3" preload="auto"></audio>
+        <audio id="request-accepted-sound" src="request-accepted.mp3" preload="auto"></audio>
+        <audio id="rare-request-accepted-sound" src="rare_request-accepted.mp3" preload="auto"></audio>
+        <audio id="request-declined-sound" src="request-declined.mp3" preload="auto"></audio>
+        <div class="profile" id="my-profile" hidden></div>
+        <div class="level-info" id="level-display" hidden>
+          <div id="level-label"></div>
+          <div class="xp-bar"><div class="xp-bar-fill" id="xp-bar-fill"></div></div>
+        </div>
+
+        <form id="friend-form">
+          <input id="friend-name" type="text" placeholder="Username to request" autocomplete="off" maxlength="32" pattern="[A-Za-z0-9 _-]+" required />
+          <button type="submit">Send request</button>
+        </form>
+        <p id="friend-message" aria-live="polite"></p>
+
+        <p class="count" id="friend-count">0 friends</p>
+        <div id="friend-request" aria-live="polite"></div>
+        <ul id="friends-list" aria-live="polite"></ul>
+      </div>
+    </section>
+    <script type="text/plain" id="usernames-data">
+Bill Gates
+vallu
+Franssis
+Gabe Newell
+Xx_MikeMusic_xX
+Not_A_Scammer
+Administrator
+BOT Stone
+O_o
+x_x
+10000 angry bees
+Hacker
+Gordon Freeman
+MLG
+Sugar Free Euroshopper
+Chef Lunden
+Microsoft
+Drake
+xaviersobased
+Yung Lean
+n6mer
+Alper
+Big Bob
+Super Win
+Valve
+Scarface
+mxbq
+MrBeast6000
+Notch
+Steve
+Herobrine
+Illuminati
+Steve Jobs
+Hacker
+Gordon Freeman
+broom
+misho
+Micheal Soft
+ghastyy
+plumMan
+MLG
+Sugar Free Euroshopper
+Chef Lunden
+Microsoft
+Drake
+xaviersobased
+Nosgov
+Yung Lean
+n6mer
+Alper
+rupaw
+Big Bob
+Super Win
+Valve
+Kevin
+WishfulWasp15
+vertu
+BrilliantBamboo182
+Scarface
+mxbq
+FriendlyFriend10
+MrBeast6000
+Notch
+Steve
+Herobrine
+Linus Torvalds
+Ronald McDonald
+Illuminati
+SpiderMan_Fan18
+ItsOvah9000
+Steve Jobs
+macrohard
+steveGates
+BillJobs
+s1mple
+luke
+Bettonn
+Aiko
+dew
+Mikropizza
+ChrisFromDaO
+dopero
+gab
+Pasianssi
+veera
+vpk
+naks naks
+Cloaker
+noki
+Valeria Phoenix Pin
+Heapy
+Breezetix
+Masle
+kit
+Puneet Ballabh
+JustXrexX
+BZIXWenchu
+annie
+bella
+elio
+rupaw
+vpk
+ArchUserBTW
+iPhone Lover
+Android Lover
+Bladee
+Ecco2k
+Thaiboy Digital
+vitun luumu
+OsamaSon
+Chief Keef
+iivari
+AI Dropshipper
+xX_XboxFan420_Xx
+GitHub
+Spotify
+SoundCloud
+JohnEconomy
+Google
+YouAreAnIdiot
+4239tyti243t2129
+360NoScopes
+ELITE H4X0R
+malcolm1337
+FortniteSucks126801
+HannahPlaysGames
+GlobalPwnage
+GetRektM8
+Discord
+FaZe
+Friend7_Hater
+Adobe
+phoon
+PaybackMan910
+ExtremeEagle11
+[ Content Deleted ]
+Roblox
+ImNotARobot
+Doge
+PewDiePie
+Jacksepticeye
+Markiplier
+eddies
+CounterStrikePlayer8
+ǝuoqɹǝuuᴉp
+ripsquad
+1exposed
+1i1an1
+BonziBuddy
+YouTube
+AbletonLover1000
+twikipedia
+Icedancer
+Eversince
+Rainworld
+FakeAdministrator
+Troll
+-_-
+Turbomursu
+xXPr0G4m3r2007Xx
+l33tN00bSl4y3r
+H4x0rKid_99
+R4zor1337
+SkullCr4sh3r
+N1nj4B0i
+T3rr0rByte
+Z0mbieK1ng
+PwnM4st3r
+Gh0stR1d3r
+D34thM4chine
+K1ll3rK1d
+Bl4ck0psN00b
+Sn1p3rW0lf
+V1ru5B0y
+CyB3rPunkz
+L4gSw1tch
+R4geQu1t
+Own4geLord
+T0x1cT34rs
+M4dL4dz
+N0Sc0p3God
+Pr0x1m1ty
+Ch34tC0d3
+R3ktByM0m
+MySpacePrincess07
+SceneKid2007
+RawrXD_2007
+EmoSk8er07
+Halo3Legend
+RunescapeKid07
+Sims2Fanatic
+MapleStoryHero
+ClubPenguinPro
+WiiBowlingChamp
+PSP_Gamer2007
+NokiaN73Fan
+WindowsVistaKid
+MSNAddMePlz
+WebkinzWarrior
+NeopetsMaster
+GuitarHeroIII
+DDR_Dancer07
+SkaterBoi2007
+NarutoFan_07
+PokemonDiamondKid
+Transformers07
+IHasCheezburger
+RickRollMaster
+YTMND_Fan
+LOLcats2007
+MLG360Quickscope
+xXNoScopeLegendXx
+XboxLiveGoldKid
+Prestige10Player
+MountainDewMLG
+DoritosCrusher
+HaloReachNotYet
+GearsOfWarBro
+CallOfDutyKid
+GamerscoreHunter
+RedRingSurvivor
+PartyChatKing
+MicSpammer360
+XBL_TrashTalker
+NukeIncoming
+InterventionKid
+SpawnTrapMaster
+TeabagChampion
+360SpinSniper
+MW2LobbyStar
+KinectSportsPro
+ForzaDriftKing
+Left4DeadBuddy
+AchievementWhore
+XboxAvatarFan
+BlueScreenBilly
+Samantha Reed
+Jordan Miller
+Tyler Brooks
+Emily Carter
+Noah Wilson
+Olivia Hayes
+Ethan Parker
+Mia Collins
+Lucas Bennett
+Grace Turner
+Owen Foster
+Chloe Morgan
+Nathan Price
+Lily Cooper
+Caleb Ward
+Zoe Mitchell
+Henry Adams
+Ruby Evans
+Isaac Howard
+Lucy Baker
+Daniel Rivera
+Ella Thompson
+Matthew Green
+Sophia King
+Benjamin Scott
+swaggs
+lua56
+Slidezz
+rydah
+iBuyHacks
+toogood4u
+Anomaly50
+Lamppa
+Spark1e
+AvEntUM
+noob_MLG
+0xDEA964
+qwerty
+M30wH1t0v0
+LouterY
+Suite
+Dyeace
+Seguairi
+marize
+DeathFormz
+Kazahanao
+schacky
+Sh1gure
+Foreverdream
+Gunny
+stuff
+Shizzle
+Zaayz
+SevenV7
+scrooge
+FaRSkY
+nobody_move
+WArrioR
+M4GI
+tomxz
+_VEEEKZ
+Noobis
+MADMAGGIE
+KomatsuNana
+qianqianxn
+Ivens
+K423
+Nagisa
+AYao
+Pathet1c
+X1coo
+mermer
+Zoeboo
+YTYT212
+X1coo9
+HighPing
+1vs4r
+Onyx915
+wilko
+bobby
+singthong101997
+octodecillionaire
+Mexican
+massi98
+skeetoh
+TRIPP
+Cheeto
+NoHyper
+Aniviix
+sandboxer
+MidnightX3D
+motionblur
+6IX9INE
+mirv
+n44l0
+jonL
+ProfessionalGriefer
+somewhere
+elles
+ezri
+Alejandroooo
+aNkeR192
+vlez
+wuiopy
+Tw1zzZ
+zen
+Yami
+t-q
+stay
+Savage
+roxychh
+Rissane
+russianmafiaextra
+Bind
+Brynn
+Basti
+Asura
+Archi
+ALEX
+Akyla
+Akkas
+ach
+002
+lucakkkkAKtrovao
+-Tom
+-Miku Loves Tuyu-
+3Jll0KA
+killah
+Stranger
+wolfdmant
+Tavares
+Savareniah
+S0ze-
+colunex
+BLISS
+Ali Counter
+Марат Трахикович
+torpedo
+melowo
+ITS ALL YOURSSS+
+I see right through you.
+Excommunicado
+blazer amatori 2007
+$aTo$hi
+evi
+transgender
+luxu
+sno
+graveman
+homeboy
+FaZe Banks
+    </script>
+  </main>
+  <button class="achievements-button" id="show-achievements" type="button" hidden>
+    <img src="w7/achievements.png" alt="" />
+    <span>Achievements</span>
+  </button>
+  </div>
+
+  <script>
+    const form = document.querySelector('#friend-form');
+    const signupForm = document.querySelector('#signup-form');
+    const startupScreen = document.querySelector('#startup-screen');
+    const startFriendsListButton = document.querySelector('#start-friends-list');
+    const signupScreen = document.querySelector('#signup-screen');
+    const friendsApp = document.querySelector('#friends-app');
+    const titleIcon = document.querySelector('#title-icon');
+    const windowTitle = document.querySelector('#window-title');
+    const signupName = document.querySelector('#signup-name');
+    const signupMessage = document.querySelector('#signup-message');
+    const signupPictureMenu = document.querySelector('#signup-picture');
+    const signupPreview = document.querySelector('#signup-preview');
+    const signupBio = document.querySelector('#signup-bio');
+    const celebrityModeButton = document.querySelector('#celebrity-mode');
+    const myProfile = document.querySelector('#my-profile');
+    const levelDisplay = document.querySelector('#level-display');
+    const levelLabel = document.querySelector('#level-label');
+    const xpBarFill = document.querySelector('#xp-bar-fill');
+    const input = document.querySelector('#friend-name');
+    const friendMessage = document.querySelector('#friend-message');
+    const list = document.querySelector('#friends-list');
+    const count = document.querySelector('#friend-count');
+    const requestArea = document.querySelector('#friend-request');
+    const achievementArea = document.querySelector('#achievement-area');
+    const statusArea = document.querySelector('#status-area');
+    const achievementsPanel = document.querySelector('#achievements-panel');
+    const achievementsList = document.querySelector('#achievements-list');
+    const achievementProgress = document.querySelector('#achievement-progress');
+    const showAchievementsButton = document.querySelector('#show-achievements');
+    const closeAchievementsButton = document.querySelector('#close-achievements');
+    const startupSound = document.querySelector('#startup-sound');
+    const signupSound = document.querySelector('#signup-sound');
+    const notificationSound = document.querySelector('#notification-sound');
+    const achievementSound = document.querySelector('#achievement-sound');
+    const specialAchievementSound = document.querySelector('#special-achievement-sound');
+    const requestSentSound = document.querySelector('#request-sent-sound');
+    const requestAcceptedSound = document.querySelector('#request-accepted-sound');
+    const rareRequestAcceptedSound = document.querySelector('#rare-request-accepted-sound');
+    const requestDeclinedSound = document.querySelector('#request-declined-sound');
+    const usernamesData = document.querySelector('#usernames-data');
+    const iconNumbers = [
+      ...Array.from({ length: 71 }, (_, index) => index + 1).filter((number) => number !== 26),
+      ...Array.from({ length: 260 }, (_, index) => index + 81)
+    ];
+    const randomProfilePicture = () => {
+      const number = iconNumbers[Math.floor(Math.random() * iconNumbers.length)];
+      return `icons/${number}.png`;
+    };
+    const specialProfiles = {
+      'bill gates': 'icons/special/bill-gates.png',
+      vallu: 'icons/special/vallu.png',
+      'gabe newell': 'icons/special/gabe.png',
+      '10000 angry bees': 'icons/special/bees.png',
+      hacker: 'icons/special/hacker.png',
+      'gordon freeman': 'icons/special/gordon.png',
+      mlg: 'icons/special/mlg.png',
+      'sugar free euroshopper': 'icons/special/es.png',
+      'chef lunden': 'icons/special/cheflunden.png',
+      microsoft: 'icons/special/microsoft.png',
+      drake: 'icons/special/drake.png',
+      xaviersobased: 'icons/special/xaviersobased.png',
+      'yung lean': 'icons/special/yunglean.png',
+      n6mer: 'icons/special/n6mer.png',
+      alper: 'icons/special/alper.png',
+      'big bob': 'icons/special/bigbob.png',
+      'super win': 'icons/special/superwin.png',
+      valve: 'icons/special/valve.png',
+      scarface: 'icons/special/scarface.png',
+      mxbq: 'icons/special/mxbq.png',
+      mrbeast6000: 'icons/special/mrbeast6000.png',
+      notch: 'icons/special/notch.png',
+      steve: 'icons/special/steve.png',
+      herobrine: 'icons/special/herobrine.png',
+      illuminati: 'icons/special/illuminati.png',
+      'steve jobs': 'icons/special/stevejobs.png',
+      noki: 'icons/special/noki.png',
+      chrisfromdao: "icons/special/chris.png",
+      masle: "icons/special/masle.png",
+      'valeria phoenix pin': "icons/special/valeria.png",
+      'puneet ballabh': "icons/special/puneet.png",
+      breezetix: "icons/special/breezetix.png",
+      bettonn: "icons/special/bettonn.png",
+      justxrexx: "icons/special/rex.png",
+      bzixwenchu: "icons/special/wenchu.png",
+      annie: "icons/special/annie.png",
+      bella: "icons/special/bella.png",
+      elio: "icons/special/elio.png",
+      rupaw: "icons/special/rupaw.png",
+      vpk: "icons/special/vpk.png",
+      dew: "icons/special/dew.png",
+      misho: "icons/special/misho.png",
+      kit: "icons/special/kit.png",
+      heapy: "icons/special/heapy.png",
+      franssis: "icons/special/franssis.png",
+      ghastyy: "icons/special/ghastyy.png",
+      heapy: "icons/special/heapy.png",
+      cloaker: "icons/special/cloaker.png",
+      broom: "icons/special/broom.png",
+      aiko: "icons/special/aiko.png",
+      'linus torvalds': "icons/special/linux.png",
+      bladee: "icons/special/bladee.png",
+      ecco2k: "icons/special/ecco2k.png",
+      'thaiboy digital': "icons/special/thaiboy.png",
+      'vitun luumu': "icons/special/luumu.png",
+      osamason: "icons/special/osamason.png",
+      'chief keef': "icons/special/keef.png",
+      github: "icons/special/github.png",
+      spotify: "icons/special/spotify.png",
+      soundcloud: "icons/special/soundcloud.png",
+      google: "icons/special/google.png",
+      youareanidiot: "icons/special/idiot.png",
+      discord: "icons/special/discord.png",
+      faze: "icons/special/faze.png",
+      friend7_hater: "icons/special/friend7hater.png",
+      adobe: "icons/special/adobe.png",
+      phoon: "icons/special/phoon.png",
+      '[ content deleted ]': "icons/special/contentdeleted.png",
+      roblox: "icons/special/roblox.png",
+      doge: "icons/special/doge.png",
+      pewdiepie: "icons/special/pewdiepie.png",
+      jacksepticeye: "icons/special/jacksepticeye.png",
+      markiplier: "icons/special/markiplier.png",
+      'ǝuoqɹǝuuᴉp': "icons/special/dinnerbone.png",
+      ripsquad: "icons/special/ripsquad.png",
+      '1exposed': "icons/special/1exposed.png",
+      bonzibuddy: "icons/special/bonzibuddy.png",
+      youtube: "icons/special/youtube.png",
+      twikipedia: "icons/special/twikipedia.png",
+      icedancer: "icons/special/icedancer.png",
+      eversince: "icons/special/eversince.png",
+      rainworld: "icons/special/rainworld.png",
+      fakeadministrator: "icons/special/fakeadmin.png",
+      troll: "icons/special/troll.png",
+      turbomursu: "icons/special/turbomursu.png",
+      administrator: "icons/special/admin.png",
+      homeboy: "icons/special/homeboy.png",
+      'faze banks': "icons/special/banks.png"
+    };
+    const profilePictureFor = (name) => specialProfiles[name.trim().toLowerCase()] || randomProfilePicture();
+    const rareUsernames = new Set([
+      'vallu', 'gabe newell', 'microsoft', 'bill gates', 'steve jobs', 'steve',
+      'herobrine', 'notch', 'illuminati', 'mrbeast6000', 'scarface', 'valve',
+      'drake', 'hacker', 'bladee', 'ecco2k', 'thaiboy digital',
+      'osamason', 'chief keef', 'github', 'spotify', 'soundcloud',
+      'google', 'faze', 'discord', 'adobe', 'roblox', 'pewdiepie',
+      'jacksepticeye', 'markiplier', 'youtube', 'troll', 'administrator',
+      'faze banks',
+    ]);
+    const isRareUser = (name) => rareUsernames.has(name.trim().toLowerCase());
+    const friends = [
+      { name: 'Random Kid', picture: 'icons/special/randomkid.png' }
+    ];
+    let usernames = [];
+    let pendingRequest = null;
+    let notificationSoundUnlocked = false;
+    let currentUsername = '';
+    let celebrityMode = false;
+    let totalXp = 0;
+    let levelInfo = null;
+    const outgoingRequests = new Set();
+
+    celebrityModeButton.addEventListener('click', () => {
+      celebrityMode = !celebrityMode;
+      document.body.classList.toggle('celebrity-mode-active', celebrityMode);
+      celebrityModeButton.classList.toggle('active', celebrityMode);
+      celebrityModeButton.setAttribute('aria-pressed', celebrityMode);
+      celebrityModeButton.textContent = celebrityMode ? 'Celebrity Mode: On' : 'Celebrity Mode';
+    });
+    const achievementMilestones = [10, 20, 50, 100, 200, 500, 1000];
+    const achievementIcons = Object.fromEntries(
+      achievementMilestones.map((amount) => [amount, `achievements/${amount}friends.png`])
+    );
+    const specialAchievements = [{
+      id: 'gabe-newell-request',
+      requestUsername: 'gabe newell',
+      title: 'Please sign my profile!',
+      description: "Accept Gabe Newell's Friend Request",
+      icon: 'icons/special/gabe.png'
+    }, {
+      id: 'vallu-request',
+      requestUsername: 'vallu',
+      title: 'The chosen one...',
+      description: "Accept the Developer's Friend Request",
+      icon: 'icons/special/vallu.png'
+    }, {
+      id: 'administrator-request',
+      requestUsername: 'administrator',
+      title: 'Not getting banned!',
+      description: "Accept the Administrator's Friend Request",
+      icon: 'achievements/admin.png'
+    }];
+    const unlockedAchievements = new Set();
+    // Add lowercase usernames here when they should reject every friend request.
+    const usersWhoDoNotAcceptRequests = new Set([
+      'administrator', 'gabe newell', 'vallu', 'hacker', 'drake', 'yung lean',
+      'microsoft', 'steve jobs', 'illuminati', 'bladee', 'ecco2k',
+      'thaiboy digital', 'vitun luumu', 'osamason', 'chief keef', 'github',
+      'spotify', 'soundcloud', 'google', 'youareanidiot', 'discord', 'faze',
+      'friend7_hater', 'adobe', 'phoon', '[ content deleted ]', 'roblox',
+      'doge', 'pewdiepie', 'jacksepticeye', 'markiplier', 'dinnerbone',
+      'ripsquad', '1exposed', 'bonzibuddy', 'youtube', 'twikipedia',
+      'icedancer', 'eversince', 'rainworld', 'fakeadministrator', 'troll'
+    ]);
+    const bannedUsernames = new Set(['yassir', 'hexagon', 'ollum', 'rapist', 'epstein', 'nigga', 'nigger', 'faggot', 'gook', 'tranny', 'rape', 'diddy', 'pyhe', 'tom nuke npc']);
+
+    let selectedSignupPicture = 'icons/1.png';
+
+    function updateSignupPreview() {
+      signupPreview.src = selectedSignupPicture;
+      document.querySelectorAll('.picture-choice').forEach((button) => {
+        button.classList.toggle('selected', button.dataset.picture === selectedSignupPicture);
+      });
+    }
+
+    iconNumbers.forEach((number) => {
+      const picture = `icons/${number}.png`;
+      const button = document.createElement('button');
+      const image = document.createElement('img');
+      button.className = 'picture-choice';
+      button.type = 'button';
+      button.dataset.picture = picture;
+      button.title = `Icon ${number}`;
+      image.src = picture;
+      image.alt = `Icon ${number}`;
+      button.append(image);
+      button.addEventListener('click', () => {
+        selectedSignupPicture = picture;
+        updateSignupPreview();
+      });
+      signupPictureMenu.append(button);
+    });
+    updateSignupPreview();
+
+    function unlockNotificationSound() {
+      notificationSound.muted = true;
+      notificationSound.play()
+        .then(() => {
+          notificationSound.pause();
+          notificationSound.currentTime = 0;
+          notificationSound.muted = false;
+          notificationSoundUnlocked = true;
+        })
+        .catch(() => { notificationSound.muted = false; });
+    }
+
+    document.addEventListener('pointerdown', unlockNotificationSound, { once: true });
+    document.addEventListener('keydown', unlockNotificationSound, { once: true });
+
+    startFriendsListButton.addEventListener('click', () => {
+      startupSound.currentTime = 0;
+      startupSound.play().catch(() => {});
+      startupScreen.hidden = true;
+      signupScreen.hidden = false;
+      windowTitle.textContent = 'Sign Up';
+    });
+
+    function loadUsernames() {
+      usernames = usernamesData.textContent
+        .split(/\r?\n/)
+        .map((name) => name.trim())
+        .filter(Boolean);
+    }
+
+    function storedUsernameExists(name) {
+      const normalizedName = name.toLowerCase();
+      return usernamesData.textContent
+        .split(/\r?\n/)
+        .map((username) => username.trim().toLowerCase())
+        .filter(Boolean)
+        .includes(normalizedName);
+    }
+
+    function canonicalUsername(name) {
+      const normalizedName = name.toLowerCase();
+      const storedName = usernamesData.textContent
+        .split(/\r?\n/)
+        .map((username) => username.trim())
+        .find((username) => username.toLowerCase() === normalizedName);
+      return storedName || name;
+    }
+
+    function updateLevelDisplay() {
+      if (!levelInfo) return;
+      const level = Math.floor(totalXp / 100) + 1;
+      const xpInLevel = totalXp % 100;
+      levelInfo.label.textContent = `Level ${level} — ${xpInLevel} / 100 XP`;
+      levelInfo.fill.style.width = `${xpInLevel}%`;
+    }
+
+    function gainXp(amount) {
+      totalXp += amount * (celebrityMode ? 10 : 1);
+      updateLevelDisplay();
+    }
+
+    function isValidUsername(name) {
+      return /^[A-Za-z0-9 _-]{1,32}$/.test(name);
+    }
+
+    function showFriendRequest() {
+      if (!usernames.length || pendingRequest) return;
+
+      const eligibleUsernames = usernames.filter((name) => !isAlreadyFriend(name));
+      if (!eligibleUsernames.length) return;
+
+      const name = eligibleUsernames[Math.floor(Math.random() * eligibleUsernames.length)];
+      const requestIndex = usernames.indexOf(name);
+      usernames.splice(requestIndex, 1);
+      pendingRequest = { name, picture: profilePictureFor(name) };
+      gainXp(5);
+      if (isRareUser(name)) gainXp(40);
+      requestArea.innerHTML = '';
+
+      const message = document.createElement('span');
+      const requestName = document.createElement('span');
+      const infoIcon = document.createElement('img');
+      const acceptButton = document.createElement('button');
+      const declineButton = document.createElement('button');
+      const actions = document.createElement('div');
+      const acceptIcon = document.createElement('img');
+      const declineIcon = document.createElement('img');
+      infoIcon.className = 'request-icon';
+      infoIcon.src = 'w7/info.png';
+      infoIcon.alt = '';
+      requestName.textContent = name;
+      if (isRareUser(name)) requestName.className = 'rare-name';
+      message.append(infoIcon, requestName, ' sent you a friend request. ');
+      acceptIcon.className = 'button-icon';
+      acceptIcon.src = 'w7/accept.png';
+      acceptIcon.alt = '';
+      acceptButton.append(acceptIcon, 'Accept');
+      declineIcon.className = 'button-icon';
+      declineIcon.src = 'w7/decline.png';
+      declineIcon.alt = '';
+      declineButton.append(declineIcon, 'Decline');
+      acceptButton.type = declineButton.type = 'button';
+
+      acceptButton.addEventListener('click', () => {
+        const acceptedName = pendingRequest.name;
+        if (!isAlreadyFriend(pendingRequest.name)) {
+          friends.push(pendingRequest);
+        }
+        const requestAchievement = specialAchievements.find((achievement) =>
+          achievement.requestUsername === pendingRequest.name.toLowerCase()
+        );
+        if (requestAchievement) unlockSpecialAchievement(requestAchievement.id);
+        const acceptanceSound = isRareUser(acceptedName) ? rareRequestAcceptedSound : requestAcceptedSound;
+        if (isRareUser(acceptedName)) {
+          gainXp(80);
+          flashRareAcceptance();
+        }
+        showStatusNotification(`You accepted ${acceptedName}'s friend request.`, 'w7/accept.png', acceptanceSound);
+        pendingRequest = null;
+        requestArea.innerHTML = '';
+        renderFriends();
+        scheduleFriendRequest();
+      });
+      declineButton.addEventListener('click', () => {
+        pendingRequest = null;
+        requestArea.innerHTML = '';
+        scheduleFriendRequest();
+      });
+
+      actions.className = 'request-actions';
+      actions.append(acceptButton, ' ', declineButton);
+      requestArea.append(message, actions);
+      if (notificationSoundUnlocked) {
+        notificationSound.currentTime = 0;
+        notificationSound.play().catch(() => {});
+      }
+    }
+
+    function scheduleFriendRequest() {
+      const waitTime = celebrityMode
+        ? 1000 + Math.random() * 2000
+        : 10000 + Math.random() * 50000;
+      window.setTimeout(() => {
+        if (Math.random() < (celebrityMode ? 1 : 0.6)) {
+          showFriendRequest();
+        } else {
+          scheduleFriendRequest();
+        }
+      }, waitTime);
+    }
+
+    function isAlreadyFriend(name) {
+      return friends.some((friend) => friend.name.toLowerCase() === name.toLowerCase());
+    }
+
+    function showStatusNotification(message, iconPath = 'w7/info.png', sound = null) {
+      const popup = document.createElement('div');
+      const icon = document.createElement('img');
+      const text = document.createElement('span');
+      popup.className = 'status-popup';
+      icon.src = iconPath;
+      icon.alt = '';
+      text.textContent = message;
+      popup.append(icon, text);
+      statusArea.append(popup);
+      if (sound) {
+        sound.currentTime = 0;
+        sound.play().catch(() => {});
+      }
+      window.setTimeout(() => popup.remove(), 4000);
+    }
+
+    function flashRareAcceptance() {
+      document.body.classList.remove('rare-flash');
+      void document.body.offsetWidth;
+      document.body.classList.add('rare-flash');
+      window.setTimeout(() => document.body.classList.remove('rare-flash'), 500);
+    }
+
+    function checkAchievements() {
+      const milestone = achievementMilestones.find((amount) =>
+        friends.length >= amount && !unlockedAchievements.has(amount)
+      );
+      if (!milestone) return;
+
+      unlockedAchievements.add(milestone);
+      const isSpecialMilestone = milestone === 500 || milestone === 1000;
+      showAchievement('Achievement unlocked!', `${milestone} friends added`, achievementIcons[milestone], isSpecialMilestone);
+      if (isSpecialMilestone) flashRareAcceptance();
+      renderAchievements();
+    }
+
+    function showAchievement(titleText, descriptionText, iconPath, isSpecial = false) {
+      const popup = document.createElement('div');
+      const icon = document.createElement('img');
+      const text = document.createElement('div');
+      const title = document.createElement('strong');
+      const description = document.createElement('span');
+      popup.className = `achievement-popup${isSpecial ? ' special' : ''}`;
+      icon.src = iconPath;
+      icon.alt = '';
+      title.textContent = titleText;
+      description.textContent = descriptionText;
+      text.append(title, description);
+      popup.append(icon, text);
+      achievementArea.append(popup);
+      const sound = isSpecial ? specialAchievementSound : achievementSound;
+      sound.currentTime = 0;
+      sound.play().catch(() => {});
+      window.setTimeout(() => popup.remove(), 4000);
+    }
+
+    function unlockSpecialAchievement(id) {
+      const achievement = specialAchievements.find((item) => item.id === id);
+      if (!achievement || unlockedAchievements.has(id)) return;
+
+      unlockedAchievements.add(id);
+      showAchievement(achievement.title, achievement.description, achievement.icon, true);
+      renderAchievements();
+    }
+
+    function renderAchievements() {
+      achievementsList.innerHTML = '';
+      const nextMilestone = achievementMilestones.find((amount) => friends.length < amount);
+      achievementProgress.textContent = nextMilestone
+        ? `${friends.length} / ${nextMilestone} friends until your next achievement`
+        : 'Every friendship achievement unlocked!';
+
+      achievementMilestones.forEach((amount) => {
+        const item = document.createElement('div');
+        const icon = document.createElement('img');
+        const text = document.createElement('div');
+        const title = document.createElement('strong');
+        const description = document.createElement('small');
+        const unlocked = unlockedAchievements.has(amount);
+        item.className = `achievement-item${unlocked ? '' : ' locked'}${amount === 500 || amount === 1000 ? ' special' : ''}`;
+        icon.src = achievementIcons[amount];
+        icon.alt = '';
+        title.textContent = `${amount} Friends`;
+        description.textContent = unlocked ? 'Unlocked' : `Add ${amount - friends.length} more friend${amount - friends.length === 1 ? '' : 's'}`;
+        text.append(title, description);
+        item.append(icon, text);
+        achievementsList.append(item);
+      });
+
+      specialAchievements.forEach((achievement) => {
+        const item = document.createElement('div');
+        const icon = document.createElement('img');
+        const text = document.createElement('div');
+        const title = document.createElement('strong');
+        const description = document.createElement('small');
+        const unlocked = unlockedAchievements.has(achievement.id);
+        item.className = `achievement-item${unlocked ? '' : ' locked'}`;
+        icon.src = achievement.icon;
+        icon.alt = '';
+        title.textContent = achievement.title;
+        description.textContent = unlocked ? 'Unlocked' : achievement.description;
+        text.append(title, description);
+        item.append(icon, text);
+        achievementsList.append(item);
+      });
+    }
+
+    function renderFriends() {
+      list.innerHTML = '';
+      count.textContent = `${friends.length} friend${friends.length === 1 ? '' : 's'}`;
+      checkAchievements();
+
+      if (friends.length === 0) {
+        list.innerHTML = '<li class="empty">Your friends list is empty.</li>';
+        renderAchievements();
+        return;
+      }
+
+      friends.forEach((friend, index) => {
+        const item = document.createElement('li');
+        const picture = document.createElement('img');
+        const friendName = document.createElement('span');
+        const removeButton = document.createElement('button');
+
+        picture.className = 'profile-picture';
+        picture.src = friend.picture;
+        picture.alt = `${friend.name}'s profile picture`;
+        friendName.className = 'friend';
+        if (isRareUser(friend.name)) friendName.classList.add('rare-name');
+        friendName.textContent = friend.name;
+        removeButton.className = 'remove';
+        removeButton.type = 'button';
+        removeButton.textContent = 'Remove';
+        removeButton.addEventListener('click', () => {
+          friends.splice(index, 1);
+          renderFriends();
+        });
+
+        item.append(picture, friendName, removeButton);
+        list.append(item);
+      });
+      renderAchievements();
+    }
+
+    showAchievementsButton.addEventListener('click', () => {
+      renderAchievements();
+      achievementsPanel.hidden = false;
+    });
+    closeAchievementsButton.addEventListener('click', () => {
+      achievementsPanel.hidden = true;
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const typedName = input.value.trim();
+      if (!typedName) return;
+      if (!isValidUsername(typedName)) {
+        friendMessage.textContent = 'Usernames can be up to 32 characters and use only letters, numbers, spaces, dashes, or underscores.';
+        showStatusNotification(friendMessage.textContent, 'w7/decline.png', requestDeclinedSound);
+        return;
+      }
+      const name = canonicalUsername(typedName);
+      const requestKey = name.toLowerCase();
+      if (requestKey === currentUsername.toLowerCase()) {
+        friendMessage.textContent = 'You cannot send a friend request to yourself.';
+        showStatusNotification(friendMessage.textContent, 'w7/decline.png', requestDeclinedSound);
+        return;
+      }
+      if (bannedUsernames.has(requestKey)) {
+        friendMessage.textContent = 'This user is banned.';
+        showStatusNotification(friendMessage.textContent, 'w7/decline.png', requestDeclinedSound);
+        return;
+      }
+      if (usersWhoDoNotAcceptRequests.has(requestKey)) {
+        friendMessage.textContent = "This user cannot receive friend requests.";
+        showStatusNotification(friendMessage.textContent, 'w7/decline.png', requestDeclinedSound);
+        return;
+      }
+      if (isAlreadyFriend(name)) {
+        friendMessage.textContent = `${name} is already on your friends list.`;
+        showStatusNotification(friendMessage.textContent);
+        return;
+      }
+      if (outgoingRequests.has(requestKey)) {
+        friendMessage.textContent = `A friend request to ${name} is already pending.`;
+        showStatusNotification(friendMessage.textContent);
+        return;
+      }
+
+      outgoingRequests.add(requestKey);
+      gainXp(5);
+      friendMessage.textContent = `Friend request sent to ${name}.`;
+      showStatusNotification(friendMessage.textContent, 'w7/info.png', requestSentSound);
+      input.value = '';
+      input.focus();
+
+      const responseTime = 10000 + Math.random() * 50000;
+      window.setTimeout(() => {
+        outgoingRequests.delete(requestKey);
+        if (Math.random() < 0.65) {
+          friends.push({ name, picture: profilePictureFor(name) });
+          gainXp(20);
+          friendMessage.textContent = `${name} accepted your friend request.`;
+          renderFriends();
+          const acceptanceSound = isRareUser(name) ? rareRequestAcceptedSound : requestAcceptedSound;
+          if (isRareUser(name)) flashRareAcceptance();
+          showStatusNotification(friendMessage.textContent, 'w7/accept.png', acceptanceSound);
+        } else {
+          friendMessage.textContent = `${name} declined your friend request.`;
+          showStatusNotification(friendMessage.textContent, 'w7/decline.png', requestDeclinedSound);
+        }
+      }, responseTime);
+    });
+
+    signupForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const selectedUsername = signupName.value.trim();
+      if (!selectedUsername) {
+        signupMessage.textContent = 'Enter a display name.';
+        return;
+      }
+      if (!isValidUsername(selectedUsername)) {
+        signupMessage.textContent = 'Usernames can be up to 32 characters and use only letters, numbers, spaces, dashes, or underscores.';
+        return;
+      }
+      if (storedUsernameExists(selectedUsername)) {
+        signupMessage.textContent = 'That username is already taken.';
+        return;
+      }
+      signupMessage.textContent = '';
+      currentUsername = selectedUsername;
+      unlockNotificationSound();
+      signupSound.currentTime = 0;
+      signupSound.play().catch(() => {});
+      const profileName = signupName.value.trim();
+      const profilePicture = document.createElement('img');
+      const profileText = document.createElement('div');
+      const profileTitle = document.createElement('strong');
+      const profileBio = document.createElement('p');
+      profilePicture.src = selectedSignupPicture;
+      profilePicture.alt = `${profileName}'s profile picture`;
+      profileTitle.textContent = profileName;
+      if (celebrityMode) profileTitle.classList.add('rare-name');
+      profileBio.textContent = signupBio.value.trim() || 'No bio yet.';
+      profileText.append(profileTitle, profileBio);
+      myProfile.replaceChildren(profilePicture, profileText);
+      myProfile.hidden = false;
+      levelInfo = { label: levelLabel, fill: xpBarFill };
+      levelDisplay.hidden = false;
+      updateLevelDisplay();
+      signupScreen.hidden = true;
+      friendsApp.hidden = false;
+      showAchievementsButton.hidden = false;
+      titleIcon.src = 'w7/network.png';
+      windowTitle.textContent = 'Friends List';
+      renderFriends();
+      loadUsernames();
+      scheduleFriendRequest();
+    });
+  </script>
+</body>
+</html>
