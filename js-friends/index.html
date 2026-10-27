@@ -156,8 +156,52 @@
       cursor: pointer;
     }
     .achievements-button[hidden] { display: none; }
+    .themes-button { left: auto; right: calc(100% + 18px); }
+    .themes-menu {
+      position: absolute;
+      top: calc(50% + 50px);
+      right: calc(100% + 8px);
+      z-index: 2;
+      width: 130px;
+      padding: 8px;
+      border: 1px solid #2b6eab;
+      color: #173f60;
+      background: #eef6fc;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+      font-size: 12px;
+    }
+    .themes-menu[hidden] { display: none; }
+    .themes-menu select { width: 100%; margin-top: 4px; }
     .friends-shell { position: relative; }
     .friends-shell { width: min(440px, calc(100% - 32px)); }
+    #theme-fade {
+      position: fixed;
+      inset: 0;
+      z-index: 9;
+      pointer-events: none;
+      opacity: 0;
+      background: #000;
+      transition: opacity 250ms ease;
+    }
+    #theme-fade.active { opacity: 1; }
+    body.gangster-edition::before { background-image: url('gangster-bg.jpg'); }
+    body.gangster-edition main, body.gangster-edition .achievements-window { border-color: #a81515; }
+    body.gangster-edition .title-bar { background: linear-gradient(#7a1010, #3a0000 48%, #150000); }
+    body.gangster-edition #friends-app, body.gangster-edition #friends-app .screen { background: #000; background-image: none; }
+    body.gangster-edition .xp-bar { border-color: #a81515; background: #180000; }
+    body.gangster-edition .xp-bar-fill { background: linear-gradient(90deg, #ff5b5b, #a81515); }
+    body.xbox360-edition::before { background-image: url('xbox360-bg.jpg'); }
+    body.xbox360-edition main, body.xbox360-edition .achievements-window { border-color: #78b82a; }
+    body.xbox360-edition .title-bar { background: linear-gradient(#a4d955, #5f9c1b 48%, #3d6f12); text-shadow: 1px 1px #355b10; }
+    body.xbox360-edition #friends-app, body.xbox360-edition #friends-app .screen { background: url('xbox360-ui-bg.jpg') center / cover; background-color: transparent; }
+    body.xbox360-edition .xp-bar { border-color: #78b82a; background: #23470d; }
+    body.xbox360-edition .xp-bar-fill { background: linear-gradient(90deg, #c5ed6d, #78b82a); }
+    body.night-edition::before { background-image: url('night-bg.jpg'); }
+    body.night-edition main, body.night-edition .achievements-window { border-color: #888; }
+    body.night-edition .title-bar { background: linear-gradient(#555, #292929 48%, #111); text-shadow: 1px 1px #000; }
+    body.night-edition #friends-app, body.night-edition #friends-app .screen { background: url('night-ui-bg.jpg') center / cover; background-color: transparent; }
+    body.night-edition .xp-bar { border-color: #aaa; background: #222; filter: grayscale(1); }
+    body.night-edition .xp-bar-fill { background: linear-gradient(90deg, #ddd, #666); }
     #boot-fade {
       position: fixed;
       inset: 0;
@@ -235,6 +279,7 @@
 </head>
 <body>
   <div id="boot-fade" aria-hidden="true"></div>
+  <div id="theme-fade" aria-hidden="true"></div>
   <div id="achievement-area" aria-live="polite"></div>
   <div id="status-area" aria-live="polite"></div>
   <div id="achievements-panel" hidden>
@@ -256,6 +301,9 @@
     </div>
     <audio id="startup-sound" src="startup.mp3" preload="auto"></audio>
     <audio id="signup-sound" src="signup.mp3" preload="auto"></audio>
+    <audio id="gangster-audio" src="gangster-audio.mp3" preload="auto"></audio>
+    <audio id="xbox360-audio" src="xbox360-audio.mp3" preload="auto"></audio>
+    <audio id="night-audio" src="night-audio.mp3" preload="auto"></audio>
     <section class="screen" id="startup-screen">
       <img class="startup-logo" src="friend7logo.png" alt="Friends List" />
       <p>Welcome to Friend7!</p>
@@ -700,6 +748,19 @@ FaZe Banks
     <img src="w7/achievements.png" alt="" />
     <span>Achievements</span>
   </button>
+  <button class="achievements-button themes-button" id="show-themes" type="button" hidden>
+    <img src="w7/themebutton.png" alt="" />
+    <span>Themes</span>
+  </button>
+  <div class="themes-menu" id="themes-menu" hidden>
+    <label for="theme-select">Theme</label>
+    <select id="theme-select">
+      <option value="original">Original</option>
+      <option value="gangster">Gangster Edition</option>
+      <option value="xbox360">Xbox 360</option>
+      <option value="night">Night</option>
+    </select>
+  </div>
   </div>
 
   <script>
@@ -733,8 +794,15 @@ FaZe Banks
     const achievementProgress = document.querySelector('#achievement-progress');
     const showAchievementsButton = document.querySelector('#show-achievements');
     const closeAchievementsButton = document.querySelector('#close-achievements');
+    const showThemesButton = document.querySelector('#show-themes');
+    const themesMenu = document.querySelector('#themes-menu');
+    const themeSelect = document.querySelector('#theme-select');
+    const themeFade = document.querySelector('#theme-fade');
     const startupSound = document.querySelector('#startup-sound');
     const signupSound = document.querySelector('#signup-sound');
+    const gangsterAudio = document.querySelector('#gangster-audio');
+    const xbox360Audio = document.querySelector('#xbox360-audio');
+    const nightAudio = document.querySelector('#night-audio');
     const notificationSound = document.querySelector('#notification-sound');
     const achievementSound = document.querySelector('#achievement-sound');
     const specialAchievementSound = document.querySelector('#special-achievement-sound');
@@ -752,7 +820,7 @@ FaZe Banks
       return `icons/${number}.png`;
     };
     const specialProfiles = {
-      'bill gates': 'icons/special/bill-gates.png',
+      'bill gates': 'icons/special/billgates.png',
       vallu: 'icons/special/vallu.png',
       'gabe newell': 'icons/special/gabe.png',
       '10000 angry bees': 'icons/special/bees.png',
@@ -871,6 +939,31 @@ FaZe Banks
       celebrityModeButton.setAttribute('aria-pressed', celebrityMode);
       celebrityModeButton.textContent = celebrityMode ? 'Celebrity Mode: On' : 'Celebrity Mode';
     });
+
+    function applyTheme(theme) {
+      const gangsterEdition = theme === 'gangster';
+      const xbox360Edition = theme === 'xbox360';
+      const nightEdition = theme === 'night';
+      if (gangsterEdition) {
+        gangsterAudio.currentTime = 0;
+        gangsterAudio.play().catch(() => {});
+      }
+      if (xbox360Edition) {
+        xbox360Audio.currentTime = 0;
+        xbox360Audio.play().catch(() => {});
+      }
+      if (nightEdition) {
+        nightAudio.currentTime = 0;
+        nightAudio.play().catch(() => {});
+      }
+      themeFade.classList.add('active');
+      window.setTimeout(() => {
+        document.body.classList.toggle('gangster-edition', gangsterEdition);
+        document.body.classList.toggle('xbox360-edition', xbox360Edition);
+        document.body.classList.toggle('night-edition', nightEdition);
+        window.setTimeout(() => themeFade.classList.remove('active'), 50);
+      }, 250);
+    }
     const achievementMilestones = [10, 20, 50, 100, 200, 500, 1000];
     const achievementIcons = Object.fromEntries(
       achievementMilestones.map((amount) => [amount, `achievements/${amount}friends.png`])
@@ -1249,6 +1342,13 @@ FaZe Banks
     closeAchievementsButton.addEventListener('click', () => {
       achievementsPanel.hidden = true;
     });
+    showThemesButton.addEventListener('click', () => {
+      themesMenu.hidden = !themesMenu.hidden;
+    });
+    themeSelect.addEventListener('change', () => {
+      applyTheme(themeSelect.value);
+      themesMenu.hidden = true;
+    });
 
     form.addEventListener('submit', (event) => {
       event.preventDefault();
@@ -1360,6 +1460,7 @@ FaZe Banks
       signupScreen.hidden = true;
       friendsApp.hidden = false;
       showAchievementsButton.hidden = false;
+      showThemesButton.hidden = false;
       titleIcon.src = 'w7/network.png';
       windowTitle.textContent = 'Friends List';
       renderFriends();
