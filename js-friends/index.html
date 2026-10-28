@@ -149,10 +149,11 @@
       12%, 88% { opacity: 1; transform: translateY(0); }
     }
     .achievements-button {
-      position: absolute;
+      position: fixed;
       top: 50%;
-      left: calc(100% + 18px);
+      left: calc(50% + 238px);
       transform: translateY(-50%);
+      z-index: 2;
       display: inline-flex;
       flex-direction: column;
       align-items: center;
@@ -168,11 +169,11 @@
       cursor: pointer;
     }
     .achievements-button[hidden] { display: none; }
-    .themes-button { left: auto; right: calc(100% + 18px); }
+    .themes-button { left: auto; right: calc(50% + 238px); }
     .themes-menu {
-      position: absolute;
+      position: fixed;
       top: calc(50% + 50px);
-      right: calc(100% + 8px);
+      right: calc(50% + 228px);
       z-index: 2;
       width: 130px;
       padding: 8px;
@@ -221,6 +222,20 @@
     body.steam-edition #friends-app, body.steam-edition #friends-app .screen { background: url('steam-ui-bg.png') center / cover; background-color: transparent; }
     body.steam-edition .xp-bar { border-color: #3b6280; background: #142333; }
     body.steam-edition .xp-bar-fill { background: linear-gradient(90deg, #66c0f4, #3b7da7); }
+    body.halflife-edition { font-family: 'Trebuchet MS', sans-serif; }
+    body.halflife-edition::before { background-image: url('hl-bg.jpg'); }
+    body.halflife-edition main, body.halflife-edition .achievements-window { border-color: #a7ad81; }
+    body.halflife-edition .title-bar { background: linear-gradient(#606f51, #3d4935 48%, #2c3627); text-shadow: 1px 1px #172016; }
+    body.halflife-edition #friends-app, body.halflife-edition #friends-app .screen { background: url('hl-ui-bg.jpg') center / cover; background-color: #303b2a; }
+    body.halflife-edition .xp-bar { border-color: #a7ad81; background: #20291c; }
+    body.halflife-edition .xp-bar-fill { background: linear-gradient(90deg, #d3d98d, #7e9460); }
+    body.passion-edition { font-family: 'Comic Sans MS', 'Comic Sans', cursive; }
+    body.passion-edition::before { background-image: url('passion-bg.jpg'); }
+    body.passion-edition main, body.passion-edition .achievements-window { border-color: #ff3aa7; border-image: linear-gradient(135deg, #ff2d55, #ffcc00, #36d96d, #26a7ff, #9d4edd) 1; }
+    body.passion-edition .title-bar { background: linear-gradient(90deg, #ff2d55, #ff9f1c, #f8e71c, #3bd671, #22a6f2, #9b59ff, #ff2d55); background-size: 200% 100%; color: #fff; text-shadow: 1px 1px #72215d; }
+    body.passion-edition #friends-app, body.passion-edition #friends-app .screen { background: url('passion-ui-bg.jpg') center / cover; background-color: transparent; }
+    body.passion-edition .xp-bar { border-color: #ff57be; background: #44225a; }
+    body.passion-edition .xp-bar-fill { background: linear-gradient(90deg, #ff2d55, #ffcc00, #36d96d, #26a7ff, #9d4edd); }
     #boot-fade {
       position: fixed;
       inset: 0;
@@ -294,6 +309,13 @@
     }
     .remove { margin-left: 8px; }
     #friend-request { margin: 16px 0; }
+    .friends-sort { margin: 0 0 10px; }
+    .friends-sort label { margin-right: 5px; }
+    @media (max-width: 620px) {
+      .achievements-button { left: auto; right: 8px; }
+      .themes-button { right: auto; left: 8px; }
+      .themes-menu { right: auto; left: 8px; }
+    }
   </style>
 </head>
 <body>
@@ -326,6 +348,8 @@
     <audio id="xbox360-audio" src="xbox360-audio.mp3" preload="auto"></audio>
     <audio id="night-audio" src="night-audio.mp3" preload="auto"></audio>
     <audio id="steam-audio" src="steam-audio.mp3" preload="auto"></audio>
+    <audio id="halflife-audio" src="hl2-audio.mp3" preload="auto"></audio>
+    <audio id="passion-audio" src="passion-audio.mp3" preload="auto"></audio>
     <section class="screen" id="startup-screen">
       <img class="startup-logo" src="friend7logo.png" alt="Friends List" />
       <p>Welcome to Friend7!</p>
@@ -377,6 +401,14 @@
         <p id="friend-message" aria-live="polite"></p>
 
         <p class="count" id="friend-count">0 friends</p>
+        <div class="friends-sort">
+          <label for="friends-sort">Sort friends:</label>
+          <select id="friends-sort">
+            <option value="latest">Latest added</option>
+            <option value="alphabetical">Alphabetical</option>
+            <option value="rarity">Rarity</option>
+          </select>
+        </div>
         <div id="friend-request" aria-live="polite"></div>
         <ul id="friends-list" aria-live="polite"></ul>
       </div>
@@ -802,6 +834,8 @@ Masleana
       <option value="xbox360">Xbox 360</option>
       <option value="night">Night</option>
       <option value="steam">Steam</option>
+      <option value="halflife">Half-Life</option>
+      <option value="passion">Graphic Design Is My Passion</option>
     </select>
   </div>
   </div>
@@ -843,6 +877,7 @@ Masleana
     const showThemesButton = document.querySelector('#show-themes');
     const themesMenu = document.querySelector('#themes-menu');
     const themeSelect = document.querySelector('#theme-select');
+    const friendsSort = document.querySelector('#friends-sort');
     const themeFade = document.querySelector('#theme-fade');
     const startupSound = document.querySelector('#startup-sound');
     const signupSound = document.querySelector('#signup-sound');
@@ -851,6 +886,8 @@ Masleana
     const xbox360Audio = document.querySelector('#xbox360-audio');
     const nightAudio = document.querySelector('#night-audio');
     const steamAudio = document.querySelector('#steam-audio');
+    const halflifeAudio = document.querySelector('#halflife-audio');
+    const passionAudio = document.querySelector('#passion-audio');
     const notificationSound = document.querySelector('#notification-sound');
     const achievementSound = document.querySelector('#achievement-sound');
     const specialAchievementSound = document.querySelector('#special-achievement-sound');
@@ -1153,7 +1190,9 @@ Masleana
       const xbox360Edition = theme === 'xbox360';
       const nightEdition = theme === 'night';
       const steamEdition = theme === 'steam';
-      [gangsterAudio, xbox360Audio, nightAudio, steamAudio].forEach((audio) => {
+      const halflifeEdition = theme === 'halflife';
+      const passionEdition = theme === 'passion';
+      [gangsterAudio, xbox360Audio, nightAudio, steamAudio, halflifeAudio, passionAudio].forEach((audio) => {
         audio.pause();
         audio.currentTime = 0;
       });
@@ -1173,12 +1212,22 @@ Masleana
         steamAudio.currentTime = 0;
         steamAudio.play().catch(() => {});
       }
+      if (halflifeEdition && playAudio) {
+        halflifeAudio.currentTime = 0;
+        halflifeAudio.play().catch(() => {});
+      }
+      if (passionEdition && playAudio) {
+        passionAudio.currentTime = 0;
+        passionAudio.play().catch(() => {});
+      }
       themeFade.classList.add('active');
       window.setTimeout(() => {
         document.body.classList.toggle('gangster-edition', gangsterEdition);
         document.body.classList.toggle('xbox360-edition', xbox360Edition);
         document.body.classList.toggle('night-edition', nightEdition);
         document.body.classList.toggle('steam-edition', steamEdition);
+        document.body.classList.toggle('halflife-edition', halflifeEdition);
+        document.body.classList.toggle('passion-edition', passionEdition);
         if (persist) saveProgress();
         window.setTimeout(() => themeFade.classList.remove('active'), 50);
       }, 250);
@@ -1565,7 +1614,16 @@ Masleana
         return;
       }
 
-      friends.forEach((friend, index) => {
+      const displayedFriends = [...friends].sort((first, second) => {
+        if (friendsSort.value === 'alphabetical') return first.name.localeCompare(second.name, undefined, { sensitivity: 'base' });
+        if (friendsSort.value === 'rarity') {
+          const rarityDifference = Number(isRareUser(second.name)) - Number(isRareUser(first.name));
+          return rarityDifference || first.name.localeCompare(second.name, undefined, { sensitivity: 'base' });
+        }
+        return friends.indexOf(second) - friends.indexOf(first);
+      });
+
+      displayedFriends.forEach((friend) => {
         const item = document.createElement('li');
         const picture = document.createElement('img');
         const friendName = document.createElement('span');
@@ -1581,7 +1639,7 @@ Masleana
         removeButton.type = 'button';
         removeButton.textContent = 'Remove';
         removeButton.addEventListener('click', () => {
-          friends.splice(index, 1);
+          friends.splice(friends.indexOf(friend), 1);
           renderFriends();
         });
 
@@ -1591,6 +1649,8 @@ Masleana
       renderAchievements();
       saveProgress();
     }
+
+    friendsSort.addEventListener('change', renderFriends);
 
     showAchievementsButton.addEventListener('click', () => {
       renderAchievements();
