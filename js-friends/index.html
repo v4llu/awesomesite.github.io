@@ -7,6 +7,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Friends List</title>
   <style>
+    @font-face {
+      font-family: 'Coolvetica';
+      src: url('fonts/CoolveticaRg-Regular.woff2') format('woff2');
+      font-display: swap;
+    }
     body {
       min-height: 100vh;
       margin: 0;
@@ -60,6 +65,7 @@
     .button-icon { width: 14px; height: 14px; margin-right: 4px; vertical-align: text-bottom; }
     .request-icon { width: 16px; height: 16px; margin-right: 5px; vertical-align: text-bottom; }
     .request-actions { margin-top: 7px; }
+    .request-queue-count { display: inline-grid; place-items: center; width: 20px; height: 20px; margin-left: 6px; padding: 0; border-radius: 50%; color: white; background: #c52a2a; font: bold 11px Arial, sans-serif; text-shadow: none; vertical-align: middle; }
     .screen { padding: 22px; }
     #startup-screen { color: white; text-align: center; background: linear-gradient(#4ba5dd, #0d5b9c); }
     .startup-logo { width: min(230px, 80%); margin: 18px 0; }
@@ -71,7 +77,8 @@
     .save-slot:hover { background: rgba(38, 128, 188, 0.85); }
     .save-slot.celebrity-slot { border-color: #ffe371; color: #fff5bd; background: linear-gradient(90deg, #8c5a00, #d99d1d); }
     .delete-save { border: 1px solid #a32a2a; color: white; background: #7f1717; cursor: pointer; }
-    .logout-button { display: flex; align-items: center; gap: 4px; margin-left: auto; padding: 2px 8px; border: 1px solid #0a467c; border-radius: 2px; color: white; background: #a32929; font: inherit; font-size: 12px; cursor: pointer; }
+    .logout-button { display: flex; align-items: center; gap: 4px; margin-left: auto; padding: 4px 8px; border: 1px solid #8f1d1d; border-radius: 3px; color: white; background: linear-gradient(#d14b4b, #8f1d1d); box-shadow: inset 0 1px rgba(255, 255, 255, 0.55); font: inherit; font-size: 12px; cursor: pointer; }
+    .logout-button:hover, .logout-button:focus-visible { filter: brightness(1.16); outline: none; }
     .logout-button img { width: 14px; height: 14px; }
     .logout-button[hidden] { display: none; }
     #signup-screen { color: #1e3f5d; }
@@ -112,8 +119,31 @@
     #friends-app h1 { margin-top: 0; }
     #friends-app .screen { text-shadow: 0 0 5px #000; }
     #friends-app input { color: black; }
+    #friends-app {
+      --friend-button-border: #2b6eab;
+      --friend-button-top: #76c2f2;
+      --friend-button-bottom: #287fbd;
+    }
+    #friends-app button {
+      margin: 0;
+      box-sizing: border-box;
+      height: 22px;
+      padding: 1px 8px;
+      border: 1px solid var(--friend-button-border);
+      border-radius: 3px;
+      color: white;
+      background: linear-gradient(var(--friend-button-top), var(--friend-button-bottom));
+      box-shadow: inset 0 1px rgba(255, 255, 255, 0.55);
+      font: 16px Arial, sans-serif;
+      cursor: pointer;
+    }
+    #friends-app button:hover, #friends-app button:focus-visible { filter: brightness(1.16); outline: none; }
+    #friend-form button { margin-left: 4px; }
+    .request-actions button + button { margin-left: 4px; }
     .profile { display: flex; align-items: center; gap: 10px; margin: 0 0 18px; }
     .profile img { width: 52px; height: 52px; object-fit: cover; }
+    .profile-avatar-column { display: flex; flex-direction: column; align-items: flex-start; }
+    #friends-app #edit-profile { width: 52px; height: 18px; margin-top: 2px; padding: 1px 0; font: 12px Arial, sans-serif; }
     .profile p { margin: 3px 0 0; }
     .level-info { margin: 0 0 8px; font-size: 12px; }
     .xp-bar { width: 150px; height: 8px; margin-top: 3px; border: 1px solid #143d5c; background: #091c2a; }
@@ -132,6 +162,37 @@
       z-index: 2;
       pointer-events: none;
     }
+    #clippy-assistant {
+      position: fixed;
+      right: 18px;
+      bottom: 105px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 150px;
+    }
+    #clippy-assistant[hidden] { display: none; }
+    #clippy-speech {
+      position: absolute;
+      right: -20px;
+      bottom: 105px;
+      width: 190px;
+      margin: 0;
+      padding: 11px 13px;
+      border: 2px solid #1c1c1c;
+      border-radius: 18px;
+      color: #111;
+      background: #fffbd0;
+      box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.35);
+      font: 16px Arial, sans-serif;
+      line-height: 1.2;
+    }
+    #clippy-speech[hidden] { display: none; }
+    #clippy-button { padding: 0; border: 0; background: transparent; cursor: pointer; }
+    #clippy-button img { display: block; width: 105px; height: 105px; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+    #clippy-button:focus-visible { outline: 2px solid #fffbd0; outline-offset: 3px; }
+    #clippy-assistant { touch-action: none; }
     .status-popup {
       display: flex;
       align-items: center;
@@ -203,18 +264,24 @@
     body.gangster-edition #friends-app, body.gangster-edition #friends-app .screen { background: #000; background-image: none; }
     body.gangster-edition .xp-bar { border-color: #a81515; background: #180000; }
     body.gangster-edition .xp-bar-fill { background: linear-gradient(90deg, #ff5b5b, #a81515); }
+    body.gangster-edition #friends-app { --friend-button-border: #a81515; --friend-button-top: #a72c2c; --friend-button-bottom: #520000; }
+    body.gangster-edition .logout-button { border-color: #a81515; background: linear-gradient(#a72c2c, #520000); }
     body.xbox360-edition::before { background-image: url('xbox360-bg.jpg'); }
     body.xbox360-edition main, body.xbox360-edition .achievements-window { border-color: #78b82a; }
     body.xbox360-edition .title-bar { background: linear-gradient(#a4d955, #5f9c1b 48%, #3d6f12); text-shadow: 1px 1px #355b10; }
     body.xbox360-edition #friends-app, body.xbox360-edition #friends-app .screen { background: url('xbox360-ui-bg.jpg') center / cover; background-color: transparent; }
     body.xbox360-edition .xp-bar { border-color: #78b82a; background: #23470d; }
     body.xbox360-edition .xp-bar-fill { background: linear-gradient(90deg, #c5ed6d, #78b82a); }
+    body.xbox360-edition #friends-app { --friend-button-border: #78b82a; --friend-button-top: #a4d955; --friend-button-bottom: #4f8d18; }
+    body.xbox360-edition .logout-button { border-color: #78b82a; background: linear-gradient(#a4d955, #4f8d18); }
     body.night-edition::before { background-image: url('night-bg.jpg'); }
     body.night-edition main, body.night-edition .achievements-window { border-color: #888; }
     body.night-edition .title-bar { background: linear-gradient(#555, #292929 48%, #111); text-shadow: 1px 1px #000; }
     body.night-edition #friends-app, body.night-edition #friends-app .screen { background: url('night-ui-bg.jpg') center / cover; background-color: transparent; }
     body.night-edition .xp-bar { border-color: #aaa; background: #222; filter: grayscale(1); }
     body.night-edition .xp-bar-fill { background: linear-gradient(90deg, #ddd, #666); }
+    body.night-edition #friends-app { --friend-button-border: #aaa; --friend-button-top: #666; --friend-button-bottom: #2f2f2f; }
+    body.night-edition .logout-button { border-color: #aaa; background: linear-gradient(#666, #2f2f2f); }
     body.steam-edition { font-family: Arial, sans-serif; }
     body.steam-edition::before { background-image: url('steam-bg.jpg'); }
     body.steam-edition main, body.steam-edition .achievements-window { border-color: #1b2838; }
@@ -222,6 +289,8 @@
     body.steam-edition #friends-app, body.steam-edition #friends-app .screen { background: url('steam-ui-bg.png') center / cover; background-color: transparent; }
     body.steam-edition .xp-bar { border-color: #3b6280; background: #142333; }
     body.steam-edition .xp-bar-fill { background: linear-gradient(90deg, #66c0f4, #3b7da7); }
+    body.steam-edition #friends-app { --friend-button-border: #3b6280; --friend-button-top: #416d8c; --friend-button-bottom: #1b354b; }
+    body.steam-edition .logout-button { border-color: #3b6280; background: linear-gradient(#416d8c, #1b354b); }
     body.halflife-edition { font-family: 'Trebuchet MS', sans-serif; }
     body.halflife-edition::before { background-image: url('hl-bg.jpg'); }
     body.halflife-edition main, body.halflife-edition .achievements-window { border-color: #a7ad81; }
@@ -229,6 +298,8 @@
     body.halflife-edition #friends-app, body.halflife-edition #friends-app .screen { background: url('hl-ui-bg.jpg') center / cover; background-color: #303b2a; }
     body.halflife-edition .xp-bar { border-color: #a7ad81; background: #20291c; }
     body.halflife-edition .xp-bar-fill { background: linear-gradient(90deg, #d3d98d, #7e9460); }
+    body.halflife-edition #friends-app { --friend-button-border: #a7ad81; --friend-button-top: #6b7a5b; --friend-button-bottom: #384531; }
+    body.halflife-edition .logout-button { border-color: #a7ad81; background: linear-gradient(#6b7a5b, #384531); }
     body.passion-edition { font-family: 'Comic Sans MS', 'Comic Sans', cursive; }
     body.passion-edition::before { background-image: url('passion-bg.jpg'); }
     body.passion-edition main, body.passion-edition .achievements-window { border-color: #ff3aa7; border-image: linear-gradient(135deg, #ff2d55, #ffcc00, #36d96d, #26a7ff, #9d4edd) 1; }
@@ -236,6 +307,29 @@
     body.passion-edition #friends-app, body.passion-edition #friends-app .screen { background: url('passion-ui-bg.jpg') center / cover; background-color: transparent; }
     body.passion-edition .xp-bar { border-color: #ff57be; background: #44225a; }
     body.passion-edition .xp-bar-fill { background: linear-gradient(90deg, #ff2d55, #ffcc00, #36d96d, #26a7ff, #9d4edd); }
+    body.passion-edition #friends-app button { border-color: #ff57be; background: linear-gradient(90deg, #ff2d55, #ffcc00, #36d96d, #26a7ff, #9d4edd); }
+    body.passion-edition .logout-button { border-color: #ff57be; background: linear-gradient(90deg, #ff2d55, #ffcc00, #36d96d, #26a7ff, #9d4edd); }
+    body.gmod-edition { font-family: 'Coolvetica', 'Arial Narrow', Arial, sans-serif; }
+    body.gmod-edition::before { background-image: url('gmod-bg.jpg'); }
+    body.gmod-edition main, body.gmod-edition .achievements-window { border: 2px solid #ababab; }
+    body.gmod-edition .title-bar { background: linear-gradient(#d8d8d8, #ababab 48%, #777); color: white; text-shadow: 1px 1px #333; }
+    body.gmod-edition #friends-app, body.gmod-edition #friends-app .screen { background: url('gmod-ui-bg.jpg') center / cover; background-color: transparent; }
+    body.gmod-edition #friends-app { --friend-button-border: #ababab; --friend-button-top: #d1d1d1; --friend-button-bottom: #777; }
+    body.gmod-edition .logout-button { border-color: #ababab; background: linear-gradient(#d1d1d1, #777); }
+    #friends-app button.accept-request { border-color: #4d8d32; background: linear-gradient(#8fc76d, #4d8d32); }
+    #friends-app button.decline-request { border-color: #a62b2b; background: linear-gradient(#df6a6a, #a62b2b); }
+    #friends-app button.accept-request, #friends-app button.decline-request { display: inline-flex; align-items: center; justify-content: center; }
+    #friends-app .accept-request .button-icon, #friends-app .decline-request .button-icon { margin: 0 4px 0 0; vertical-align: middle; }
+    body.gangster-edition .logout-button,
+    body.xbox360-edition .logout-button,
+    body.night-edition .logout-button,
+    body.steam-edition .logout-button,
+    body.halflife-edition .logout-button,
+    body.passion-edition .logout-button,
+    body.gmod-edition .logout-button {
+      border-color: #8f1d1d;
+      background: linear-gradient(#d14b4b, #8f1d1d);
+    }
     #boot-fade {
       position: fixed;
       inset: 0;
@@ -309,7 +403,7 @@
       -webkit-text-fill-color: transparent;
       text-shadow: 0 0 5px rgba(255, 201, 45, 0.8);
     }
-    .remove { margin-left: 8px; }
+    #friends-app .remove { margin-left: 8px; }
     #friend-request { margin: 16px 0; }
     .friends-sort { margin: 0 0 10px; }
     .friends-sort label { margin-right: 5px; }
@@ -325,6 +419,10 @@
   <div id="theme-fade" aria-hidden="true"></div>
   <div id="achievement-area" aria-live="polite"></div>
   <div id="status-area" aria-live="polite"></div>
+  <aside id="clippy-assistant" aria-live="polite" hidden>
+    <div id="clippy-speech"></div>
+    <button id="clippy-button" type="button" aria-label="Show another Clippy message"><img src="w7/clippy.png" alt="Clippy" draggable="false" /></button>
+  </aside>
   <div id="achievements-panel" hidden>
     <section class="achievements-window" role="dialog" aria-modal="true" aria-labelledby="achievements-title">
       <div class="title-bar"><img class="title-icon" src="w7/friends.png" alt="" />Achievements</div>
@@ -352,6 +450,7 @@
     <audio id="steam-audio" src="steam-audio.mp3" preload="auto"></audio>
     <audio id="halflife-audio" src="hl2-audio.mp3" preload="auto"></audio>
     <audio id="passion-audio" src="passion-audio.mp3" preload="auto"></audio>
+    <audio id="gmod-audio" src="gmod-audio.mp3" preload="auto"></audio>
     <section class="screen" id="startup-screen">
       <img class="startup-logo" src="friend7logo.png" alt="Friends List" />
       <p>Welcome to Friend7!</p>
@@ -363,8 +462,8 @@
       <button class="windows-button" id="start-friends-list" type="button">Start</button>
     </section>
     <section class="screen" id="signup-screen" hidden>
-      <h1>Create your account</h1>
-      <p>Sign up to start using Friends List.</p>
+      <h1 id="signup-heading">Create your account</h1>
+      <p id="signup-subtitle">Sign up to start using Friend7.</p>
       <form id="signup-form">
         <label for="signup-name">Display name</label>
         <input id="signup-name" type="text" autocomplete="name" maxlength="32" pattern="[A-Za-z0-9 _-]+" required />
@@ -373,9 +472,9 @@
         <div class="picture-menu" id="signup-picture" aria-label="Choose a profile picture"></div>
         <img id="signup-preview" alt="Selected profile picture" />
         <label for="signup-bio">Bio</label>
-        <textarea id="signup-bio" rows="3" maxlength="120" placeholder="Tell your friends about yourself"></textarea>
+        <textarea id="signup-bio" rows="3" maxlength="32" placeholder="Tell your friends about yourself"></textarea>
         <button class="windows-button" id="celebrity-mode" type="button" aria-pressed="false">Celebrity Mode</button>
-        <button class="windows-button" type="submit">Sign up</button>
+        <button class="windows-button" id="signup-submit" type="submit">Sign up</button>
       </form>
     </section>
 
@@ -390,12 +489,11 @@
         <audio id="request-accepted-sound" src="request-accepted.mp3" preload="auto"></audio>
         <audio id="rare-request-accepted-sound" src="rare_request-accepted.mp3" preload="auto"></audio>
         <audio id="request-declined-sound" src="request-declined.mp3" preload="auto"></audio>
-        <div class="profile" id="my-profile" hidden></div>
+        <div class="profile" id="my-profile" hidden><button id="edit-profile" type="button">Edit</button></div>
         <div class="level-info" id="level-display" hidden>
           <div id="level-label"></div>
           <div class="xp-bar"><div class="xp-bar-fill" id="xp-bar-fill"></div></div>
         </div>
-
         <form id="friend-form">
           <input id="friend-name" type="text" placeholder="Username" autocomplete="off" maxlength="32" pattern="[A-Za-z0-9 _-]+" required />
           <button type="submit">Send request</button>
@@ -1478,6 +1576,7 @@ dr fart
       <option value="steam">Steam</option>
       <option value="halflife">Half-Life</option>
       <option value="passion">graphic design is my passion</option>
+      <option value="gmod">Garry's Mod</option>
     </select>
   </div>
   </div>
@@ -1499,6 +1598,10 @@ dr fart
     const signupPictureMenu = document.querySelector('#signup-picture');
     const signupPreview = document.querySelector('#signup-preview');
     const signupBio = document.querySelector('#signup-bio');
+    const signupHeading = document.querySelector('#signup-heading');
+    const signupSubtitle = document.querySelector('#signup-subtitle');
+    const signupSubmit = document.querySelector('#signup-submit');
+    const editProfileButton = document.querySelector('#edit-profile');
     const celebrityModeButton = document.querySelector('#celebrity-mode');
     const myProfile = document.querySelector('#my-profile');
     const levelDisplay = document.querySelector('#level-display');
@@ -1511,6 +1614,9 @@ dr fart
     const requestArea = document.querySelector('#friend-request');
     const achievementArea = document.querySelector('#achievement-area');
     const statusArea = document.querySelector('#status-area');
+    const clippyAssistant = document.querySelector('#clippy-assistant');
+    const clippySpeech = document.querySelector('#clippy-speech');
+    const clippyButton = document.querySelector('#clippy-button');
     const achievementsPanel = document.querySelector('#achievements-panel');
     const achievementsList = document.querySelector('#achievements-list');
     const achievementProgress = document.querySelector('#achievement-progress');
@@ -1530,6 +1636,7 @@ dr fart
     const steamAudio = document.querySelector('#steam-audio');
     const halflifeAudio = document.querySelector('#halflife-audio');
     const passionAudio = document.querySelector('#passion-audio');
+    const gmodAudio = document.querySelector('#gmod-audio');
     const notificationSound = document.querySelector('#notification-sound');
     const achievementSound = document.querySelector('#achievement-sound');
     const specialAchievementSound = document.querySelector('#special-achievement-sound');
@@ -1687,14 +1794,14 @@ dr fart
       'burger king': 'icons/special/burger-king.png',
       'wendys': 'icons/special/wendys.png',
       'wingstop': 'icons/special/wingstop.png',
-      'pizza hut': 'icons/special/pizza hut.png',
+      'pizza hut': 'icons/special/pizza-hut.png',
       'dominos': 'icons/special/dominos.png',
       'justin bieber': 'icons/special/justin-bieber.png',
       'jesse pinkman': 'icons/special/jesse-pinkman.png',
       'nicki minaj': 'icons/special/nicki-minaj.png',
       'the weeknd': 'icons/special/the-weeknd.png',
-      'taylor swift': 'icons/special/taylor swift.png',
-      'ed sheeran': 'icons/special/ed sheeran.png',
+      'taylor swift': 'icons/special/taylor-swift.png',
+      'ed sheeran': 'icons/special/ed-sheeran.png',
       'macklemore': 'icons/special/macklemore.png',
       'dj nate': 'icons/special/dj-nate.png',
       'young thug': 'icons/special/young-thug.png',
@@ -1717,9 +1824,9 @@ dr fart
       'messi': 'icons/special/messi.png',
       'kai cenat': 'icons/special/kai-cenat.png',
       'ishowspeed': 'icons/special/ishowspeed.png',
-      'lebron james': 'icons/special/lebron james.png',
-      'steph curry': 'icons/special/steph curry.png',
-      'kobe bryant': 'icons/special/kobe bryant.png',
+      'lebron james': 'icons/special/lebron-james.png',
+      'steph curry': 'icons/special/steph-curry.png',
+      'kobe bryant': 'icons/special/kobe-bryant.png',
       'micheal jordan': 'icons/special/micheal-jordan.png',
       'fanta': 'icons/special/fanta.png',
       'mountain dew': 'icons/special/mountain-dew.png',
@@ -1778,7 +1885,7 @@ dr fart
       'facebook': 'icons/special/facebook.png',
       'instagram': 'icons/special/instagram.png',
       'snapchat': 'icons/special/snapchat.png',
-      'elon musk': 'icons/special/elon musk.png',
+      'elon musk': 'icons/special/elon-musk.png',
       'zachxbt': 'icons/special/zachxbt.png',
       'paypal': 'icons/special/paypal.png',
       'cashapp': 'icons/special/cashapp.png',
@@ -1826,6 +1933,9 @@ dr fart
       if (pendingRequest && !specialProfiles[pendingRequest.name.trim().toLowerCase()]) {
         usedBasicPictures.add(pendingRequest.picture);
       }
+      friendRequestQueue.forEach((request) => {
+        if (!specialProfiles[request.name.trim().toLowerCase()]) usedBasicPictures.add(request.picture);
+      });
       return randomProfilePicture(usedBasicPictures);
     };
 
@@ -2037,18 +2147,44 @@ dr fart
     const friends = [
       { name: 'Random Kid', picture: 'icons/special/randomkid.png' }
     ];
+    let observedFriendCount = friends.length;
+    let permittedFriendAdditions = 0;
     let usernames = [];
     let pendingRequest = null;
+    const friendRequestQueue = [];
     let notificationSoundUnlocked = false;
     let currentUsername = '';
     let currentBio = '';
+    let editingProfile = false;
     let celebrityMode = false;
     let totalXp = 0;
     let levelInfo = null;
     let activeSaveSlot = null;
     let sessionActive = false;
     let friendRequestTimer = null;
+    let clippyTimer = null;
+    let clippyHideTimer = null;
+    let clippyMessageIndex = 0;
+    let clippyDragActive = false;
+    let clippyWasDragged = false;
     const outgoingRequests = new Set();
+    // Edit this list to change Clippy's rotating messages.
+    const clippyMessages = [
+      'It looks like you are building a friends list. Need help finding someone?',
+      'Try sorting your friends to find the newest additions.',
+      'You can click me anytime for another helpful tip!',
+      'Friend requests can take a little while to receive a reply.',
+      'Have you played Minesweeper?',
+      'Do not delete Flappy Bird from your phone, You cannot download it again from the App Store!',
+      'Always use an AdBlocker..',
+      'Its like its in the past or something...',
+      'Hey Lois, Im in Friend7!',
+      'gabagool',
+      'Bandicam vs Fraps, who wins?',
+      'CS: Source is better than CS:GO',
+      'CS 1.6 is better than CS: Source',
+      'Plumsquad was here'
+    ];
 
     function saveKey(slot) {
       return `friend7-save-slot-${slot}`;
@@ -2133,6 +2269,7 @@ dr fart
 
     function renderCurrentProfile() {
       const profilePicture = document.createElement('img');
+      const profileAvatarColumn = document.createElement('div');
       const profileText = document.createElement('div');
       const profileTitle = document.createElement('strong');
       const profileBio = document.createElement('p');
@@ -2142,7 +2279,9 @@ dr fart
       if (celebrityMode) profileTitle.classList.add('rare-name');
       profileBio.textContent = currentBio || 'No bio yet.';
       profileText.append(profileTitle, profileBio);
-      myProfile.replaceChildren(profilePicture, profileText);
+      profileAvatarColumn.className = 'profile-avatar-column';
+      profileAvatarColumn.append(profilePicture, editProfileButton);
+      myProfile.replaceChildren(profileAvatarColumn, profileText);
       myProfile.hidden = false;
       levelInfo = { label: levelLabel, fill: xpBarFill };
       levelDisplay.hidden = false;
@@ -2150,12 +2289,36 @@ dr fart
     }
 
     function enterSignup() {
+      editingProfile = false;
       startupSound.currentTime = 0;
       startupSound.play().catch(() => {});
       startupScreen.hidden = true;
       signupScreen.hidden = false;
       windowTitle.textContent = 'Sign Up';
     }
+
+    editProfileButton.addEventListener('click', () => {
+      editingProfile = true;
+      sessionActive = false;
+      if (friendRequestTimer) window.clearTimeout(friendRequestTimer);
+      stopClippy();
+      friendsApp.hidden = true;
+      showAchievementsButton.hidden = true;
+      showThemesButton.hidden = true;
+      logoutButton.hidden = true;
+      signupName.value = currentUsername;
+      signupName.disabled = true;
+      signupBio.value = currentBio;
+      signupMessage.textContent = '';
+      signupHeading.textContent = 'Edit your profile';
+      signupSubtitle.textContent = 'Choose a new picture or update your bio.';
+      celebrityModeButton.hidden = true;
+      signupSubmit.textContent = 'Save profile';
+      signupScreen.hidden = false;
+      titleIcon.src = 'w7/login.png';
+      windowTitle.textContent = 'Edit Profile';
+      updateSignupPreview();
+    });
 
     function beginNewSave(slot) {
       activeSaveSlot = slot;
@@ -2165,6 +2328,8 @@ dr fart
       selectedSignupPicture = 'icons/1.png';
       unlockedAchievements.clear();
       friends.splice(0, friends.length, { name: 'Random Kid', picture: 'icons/special/randomkid.png' });
+      observedFriendCount = friends.length;
+      permittedFriendAdditions = 0;
       setCelebrityMode(false);
       themeSelect.value = 'original';
       applyTheme('original', false);
@@ -2180,6 +2345,7 @@ dr fart
       logoutButton.hidden = false;
       titleIcon.src = 'w7/network.png';
       windowTitle.textContent = 'Friends List';
+      startClippy();
       ensureUniqueBasicProfilePictures();
       renderCurrentProfile();
       renderFriends();
@@ -2187,6 +2353,69 @@ dr fart
       loadUsernames();
       scheduleFriendRequest();
     }
+
+    function showClippyMessage() {
+      clippySpeech.textContent = clippyMessages[clippyMessageIndex];
+      clippyMessageIndex = (clippyMessageIndex + 1) % clippyMessages.length;
+      clippySpeech.hidden = false;
+      if (clippyHideTimer) window.clearTimeout(clippyHideTimer);
+      clippyHideTimer = window.setTimeout(() => { clippySpeech.hidden = true; }, 7000);
+    }
+
+    function scheduleClippyMessage() {
+      const delay = 60000 + Math.random() * 240000;
+      clippyTimer = window.setTimeout(() => {
+        showClippyMessage();
+        scheduleClippyMessage();
+      }, delay);
+    }
+
+    function startClippy() {
+      if (!clippyMessages.length) return;
+      clippyAssistant.hidden = false;
+      clippySpeech.hidden = true;
+      if (clippyTimer) window.clearTimeout(clippyTimer);
+      scheduleClippyMessage();
+    }
+
+    function stopClippy() {
+      if (clippyTimer) window.clearTimeout(clippyTimer);
+      if (clippyHideTimer) window.clearTimeout(clippyHideTimer);
+      clippyTimer = null;
+      clippyHideTimer = null;
+      clippyAssistant.hidden = true;
+    }
+
+    clippyAssistant.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      const bounds = clippyAssistant.getBoundingClientRect();
+      clippyDragActive = true;
+      clippyWasDragged = false;
+      clippyAssistant.dataset.dragOffsetX = String(event.clientX - bounds.left);
+      clippyAssistant.dataset.dragOffsetY = String(event.clientY - bounds.top);
+      clippyAssistant.style.left = `${bounds.left}px`;
+      clippyAssistant.style.top = `${bounds.top}px`;
+      clippyAssistant.style.right = 'auto';
+      clippyAssistant.style.bottom = 'auto';
+      clippyAssistant.setPointerCapture(event.pointerId);
+    });
+    clippyAssistant.addEventListener('pointermove', (event) => {
+      if (!clippyDragActive) return;
+      const width = clippyAssistant.offsetWidth;
+      const height = clippyAssistant.offsetHeight;
+      const offsetX = Number(clippyAssistant.dataset.dragOffsetX);
+      const offsetY = Number(clippyAssistant.dataset.dragOffsetY);
+      const left = Math.max(0, Math.min(window.innerWidth - width, event.clientX - offsetX));
+      const top = Math.max(0, Math.min(window.innerHeight - height, event.clientY - offsetY));
+      if (Math.abs(event.movementX) + Math.abs(event.movementY) > 0) clippyWasDragged = true;
+      clippyAssistant.style.left = `${left}px`;
+      clippyAssistant.style.top = `${top}px`;
+    });
+    clippyAssistant.addEventListener('pointerup', (event) => {
+      clippyDragActive = false;
+      clippyWasDragged = false;
+      if (clippyAssistant.hasPointerCapture(event.pointerId)) clippyAssistant.releasePointerCapture(event.pointerId);
+    });
 
     function loadSaveSlot(slot) {
       const saved = readSaveSlot(slot);
@@ -2199,6 +2428,8 @@ dr fart
       currentBio = saved.bio || '';
       selectedSignupPicture = saved.profilePicture || 'icons/1.png';
       friends.splice(0, friends.length, ...(Array.isArray(saved.friends) ? saved.friends : []));
+      observedFriendCount = friends.length;
+      permittedFriendAdditions = 0;
       unlockedAchievements.clear();
       (saved.achievements || []).forEach((achievement) => unlockedAchievements.add(achievement));
       setCelebrityMode(Boolean(saved.celebrityMode));
@@ -2219,7 +2450,8 @@ dr fart
       const steamEdition = theme === 'steam';
       const halflifeEdition = theme === 'halflife';
       const passionEdition = theme === 'passion';
-      [gangsterAudio, xbox360Audio, nightAudio, steamAudio, halflifeAudio, passionAudio].forEach((audio) => {
+      const gmodEdition = theme === 'gmod';
+      [gangsterAudio, xbox360Audio, nightAudio, steamAudio, halflifeAudio, passionAudio, gmodAudio].forEach((audio) => {
         audio.pause();
         audio.currentTime = 0;
       });
@@ -2247,6 +2479,10 @@ dr fart
         passionAudio.currentTime = 0;
         passionAudio.play().catch(() => {});
       }
+      if (gmodEdition && playAudio) {
+        gmodAudio.currentTime = 0;
+        gmodAudio.play().catch(() => {});
+      }
       themeFade.classList.add('active');
       window.setTimeout(() => {
         document.body.classList.toggle('gangster-edition', gangsterEdition);
@@ -2255,6 +2491,7 @@ dr fart
         document.body.classList.toggle('steam-edition', steamEdition);
         document.body.classList.toggle('halflife-edition', halflifeEdition);
         document.body.classList.toggle('passion-edition', passionEdition);
+        document.body.classList.toggle('gmod-edition', gmodEdition);
         if (persist) saveProgress();
         window.setTimeout(() => themeFade.classList.remove('active'), 50);
       }, 250);
@@ -2596,6 +2833,18 @@ dr fart
       levelInfo.fill.style.width = `${xpInLevel}%`;
     }
 
+    function currentLevel() {
+      return Math.floor(totalXp / 100) + 1;
+    }
+
+    function friendSpeedMultiplier() {
+      return Math.min(1.5, 1 + (currentLevel() - 1) * 0.005);
+    }
+
+    function friendAcceptanceChance(baseChance) {
+      return Math.min(baseChance + 0.2, baseChance + (currentLevel() - 1) * 0.002);
+    }
+
     function gainXp(amount) {
       checkForTampering();
       totalXp += amount * (celebrityMode ? 10 : 1);
@@ -2609,6 +2858,16 @@ dr fart
       if (currentRulesSignature !== expectedRulesSignature) {
         unlockSpecialAchievement('cheater');
       }
+      const friendCountChange = friends.length - observedFriendCount;
+      if (friendCountChange > permittedFriendAdditions) {
+        unlockSpecialAchievement('cheater');
+      }
+      observedFriendCount = friends.length;
+      permittedFriendAdditions = Math.max(0, permittedFriendAdditions - Math.max(0, friendCountChange));
+    }
+
+    function permitFriendAddition() {
+      permittedFriendAdditions += 1;
     }
 
     function isValidUsername(name) {
@@ -2620,18 +2879,23 @@ dr fart
       return prohibitedSignupTerms.some((term) => normalizedName.includes(term));
     }
 
-    function showFriendRequest() {
-      if (!sessionActive || !usernames.length || pendingRequest) return;
+    function showFriendRequest(renderOnly = false) {
+      let receivedNewRequest = false;
+      if (!renderOnly) {
+        if (!sessionActive || !usernames.length) return;
+        const eligibleUsernames = usernames.filter((name) => !isAlreadyFriend(name));
+        if (!eligibleUsernames.length) return;
 
-      const eligibleUsernames = usernames.filter((name) => !isAlreadyFriend(name));
-      if (!eligibleUsernames.length) return;
-
-      const name = eligibleUsernames[Math.floor(Math.random() * eligibleUsernames.length)];
-      const requestIndex = usernames.indexOf(name);
-      usernames.splice(requestIndex, 1);
-      pendingRequest = { name, picture: profilePictureFor(name) };
-      gainXp(xpRewards.receivedRequest);
-      if (isRareUser(name)) gainXp(xpRewards.rareReceivedRequest);
+        const name = eligibleUsernames[Math.floor(Math.random() * eligibleUsernames.length)];
+        const requestIndex = usernames.indexOf(name);
+        usernames.splice(requestIndex, 1);
+        friendRequestQueue.push({ name, picture: profilePictureFor(name) });
+        gainXp(xpRewards.receivedRequest);
+        if (isRareUser(name)) gainXp(xpRewards.rareReceivedRequest);
+        if (!pendingRequest) pendingRequest = friendRequestQueue.shift();
+        receivedNewRequest = true;
+      }
+      if (!pendingRequest) return;
       requestArea.innerHTML = '';
 
       const message = document.createElement('span');
@@ -2645,9 +2909,16 @@ dr fart
       infoIcon.className = 'request-icon';
       infoIcon.src = 'w7/info.png';
       infoIcon.alt = '';
-      requestName.textContent = name;
-      if (isRareUser(name)) requestName.className = 'rare-name';
+      requestName.textContent = pendingRequest.name;
+      if (isRareUser(pendingRequest.name)) requestName.className = 'rare-name';
       message.append(infoIcon, requestName, ' sent you a friend request. ');
+      if (friendRequestQueue.length) {
+        const queueCount = document.createElement('span');
+        queueCount.className = 'request-queue-count';
+        queueCount.textContent = String(friendRequestQueue.length + 1);
+        queueCount.title = `${friendRequestQueue.length + 1} friend requests waiting`;
+        message.append(queueCount);
+      }
       acceptIcon.className = 'button-icon';
       acceptIcon.src = 'w7/accept.png';
       acceptIcon.alt = '';
@@ -2657,10 +2928,13 @@ dr fart
       declineIcon.alt = '';
       declineButton.append(declineIcon, 'Decline');
       acceptButton.type = declineButton.type = 'button';
+      acceptButton.className = 'accept-request';
+      declineButton.className = 'decline-request';
 
       acceptButton.addEventListener('click', () => {
         const acceptedName = pendingRequest.name;
         if (!isAlreadyFriend(pendingRequest.name)) {
+          permitFriendAddition();
           friends.push(pendingRequest);
         }
         const requestAchievement = specialAchievements.find((achievement) =>
@@ -2674,34 +2948,35 @@ dr fart
         }
         showStatusNotification(`You accepted ${acceptedName}'s friend request.`, 'w7/accept.png', acceptanceSound);
         playSpecialAcceptanceLayer(acceptedName);
-        pendingRequest = null;
+        pendingRequest = friendRequestQueue.shift() || null;
         requestArea.innerHTML = '';
         renderFriends();
-        scheduleFriendRequest();
+        if (pendingRequest) showFriendRequest(true);
       });
       declineButton.addEventListener('click', () => {
-        pendingRequest = null;
+        pendingRequest = friendRequestQueue.shift() || null;
         requestArea.innerHTML = '';
-        scheduleFriendRequest();
+        if (pendingRequest) showFriendRequest(true);
       });
 
       actions.className = 'request-actions';
       actions.append(acceptButton, ' ', declineButton);
       requestArea.append(message, actions);
-      if (notificationSoundUnlocked) {
+      if (receivedNewRequest && notificationSoundUnlocked) {
         notificationSound.currentTime = 0;
         notificationSound.play().catch(() => {});
       }
+      if (receivedNewRequest) scheduleFriendRequest();
     }
 
     function scheduleFriendRequest() {
       if (!sessionActive) return;
       const waitTime = celebrityMode
         ? 1000 + Math.random() * 2000
-        : 10000 + Math.random() * 50000;
+        : (10000 + Math.random() * 50000) / friendSpeedMultiplier();
       friendRequestTimer = window.setTimeout(() => {
         if (!sessionActive) return;
-        if (Math.random() < (celebrityMode ? 1 : 0.6)) {
+        if (Math.random() < (celebrityMode ? 1 : friendAcceptanceChance(0.6))) {
           showFriendRequest();
         } else {
           scheduleFriendRequest();
@@ -2875,6 +3150,7 @@ dr fart
     }
 
     function renderFriends() {
+      checkForTampering();
       list.innerHTML = '';
       count.textContent = `${friends.length} friend${friends.length === 1 ? '' : 's'}`;
       checkAchievements();
@@ -2941,8 +3217,10 @@ dr fart
     logoutButton.addEventListener('click', () => {
       saveProgress();
       sessionActive = false;
+      stopClippy();
       if (friendRequestTimer) window.clearTimeout(friendRequestTimer);
       pendingRequest = null;
+      friendRequestQueue.splice(0, friendRequestQueue.length);
       requestArea.innerHTML = '';
       friendsApp.hidden = true;
       showAchievementsButton.hidden = true;
@@ -3008,10 +3286,11 @@ dr fart
       input.value = '';
       input.focus();
 
-      const responseTime = 10000 + Math.random() * 50000;
+      const responseTime = (10000 + Math.random() * 50000) / friendSpeedMultiplier();
       window.setTimeout(() => {
         outgoingRequests.delete(requestKey);
-        if (Math.random() < 0.65) {
+        if (Math.random() < friendAcceptanceChance(0.65)) {
+          permitFriendAddition();
           friends.push({ name, picture: profilePictureFor(name) });
           gainXp(xpRewards.acceptedRequest);
           friendMessage.textContent = `${name} accepted your friend request.`;
@@ -3029,6 +3308,19 @@ dr fart
 
     signupForm.addEventListener('submit', (event) => {
       event.preventDefault();
+      if (editingProfile) {
+        currentBio = signupBio.value.trim();
+        editingProfile = false;
+        signupName.disabled = false;
+        signupHeading.textContent = 'Create your account';
+        signupSubtitle.textContent = 'Sign up to start using Friend7.';
+        celebrityModeButton.hidden = false;
+        signupSubmit.textContent = 'Sign up';
+        signupScreen.hidden = true;
+        openFriendsApp();
+        saveProgress();
+        return;
+      }
       const selectedUsername = signupName.value.trim();
       if (!selectedUsername) {
         signupMessage.textContent = 'Enter a display name.';
