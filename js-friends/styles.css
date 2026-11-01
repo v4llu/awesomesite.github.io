@@ -1,0 +1,406 @@
+    @font-face {
+      font-family: 'Coolvetica';
+      src: url('fonts/CoolveticaRg-Regular.woff2') format('woff2');
+      font-display: swap;
+    }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: -8px;
+      z-index: -1;
+      background: url('background.jpg') center / cover no-repeat;
+      filter: blur(4px);
+    }
+    body.rare-flash::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      pointer-events: none;
+      background: rgba(255, 215, 86, 0.4);
+      animation: rare-flash 500ms ease-out forwards;
+    }
+    @keyframes rare-flash {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    main {
+      width: 100%;
+      overflow: hidden;
+      border: 1px solid #0b5394;
+      border-radius: 7px;
+      background: #f4f8fc;
+      box-shadow: 0 0 18px rgba(0, 0, 0, 0.75);
+    }
+    .title-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      color: white;
+      background: linear-gradient(#62b6ee, #1875bd 48%, #0d5b9c);
+      font-size: 14px;
+      font-weight: bold;
+      text-shadow: 1px 1px #124b78;
+    }
+    .title-icon { width: 16px; height: 16px; }
+    .heading-icon { width: 24px; height: 24px; margin-right: 7px; vertical-align: middle; }
+    .button-icon { width: 14px; height: 14px; margin-right: 4px; vertical-align: text-bottom; }
+    .request-icon { width: 16px; height: 16px; margin-right: 5px; vertical-align: text-bottom; }
+    .request-actions { margin-top: 7px; }
+    .request-queue-count { display: inline-grid; place-items: center; width: 20px; height: 20px; margin-left: 6px; padding: 0; border-radius: 50%; color: white; background: #c52a2a; font: bold 11px Arial, sans-serif; text-shadow: none; vertical-align: middle; }
+    .screen { padding: 22px; }
+    #startup-screen { color: white; text-align: center; background: linear-gradient(#4ba5dd, #0d5b9c); }
+    .startup-logo { width: min(230px, 80%); margin: 18px 0; }
+    #save-slots { margin: 16px 0; }
+    #save-slots p { margin: 0 0 7px; }
+    .save-slot-row { display: flex; gap: 5px; margin: 5px 0; }
+    .save-slot { display: flex; flex: 1; align-items: center; gap: 7px; padding: 7px; border: 1px solid #b8e0fa; color: white; background: rgba(0, 63, 117, 0.6); cursor: pointer; text-align: left; }
+    .save-slot img { width: 28px; height: 28px; object-fit: cover; }
+    .save-slot:hover { background: rgba(38, 128, 188, 0.85); }
+    .save-slot.celebrity-slot { border-color: #ffe371; color: #fff5bd; background: linear-gradient(90deg, #8c5a00, #d99d1d); }
+    .delete-save { border: 1px solid #a32a2a; color: white; background: #7f1717; cursor: pointer; }
+    .logout-button { display: flex; align-items: center; gap: 4px; margin-left: auto; padding: 4px 8px; border: 1px solid #8f1d1d; border-radius: 3px; color: white; background: linear-gradient(#d14b4b, #8f1d1d); box-shadow: inset 0 1px rgba(255, 255, 255, 0.55); font: inherit; font-size: 12px; cursor: pointer; }
+    .logout-button:hover, .logout-button:focus-visible { filter: brightness(1.16); outline: none; }
+    .logout-button img { width: 14px; height: 14px; }
+    .logout-button[hidden] { display: none; }
+    #signup-screen { color: #1e3f5d; }
+    #signup-screen h1 { margin-top: 0; font-size: 22px; font-weight: normal; }
+    #signup-screen label { display: block; margin: 12px 0 4px; font-size: 13px; }
+    #signup-screen input, #signup-screen textarea { width: 100%; box-sizing: border-box; padding: 6px; }
+    #signup-screen textarea { resize: none; }
+    #signup-preview { width: 48px; height: 48px; margin-top: 8px; vertical-align: middle; object-fit: cover; }
+    .picture-menu {
+      display: grid;
+      grid-template-columns: repeat(8, 34px);
+      gap: 4px;
+      max-height: 180px;
+      padding: 2px;
+      overflow-y: auto;
+    }
+    .picture-choice { padding: 2px; border: 1px solid transparent; background: transparent; cursor: pointer; }
+    .picture-choice img { display: block; width: 28px; height: 28px; object-fit: cover; }
+    .picture-choice.selected { border-color: #287fbd; background: #d9effc; }
+    .windows-button {
+      margin-top: 18px;
+      padding: 5px 18px;
+      border: 1px solid #2b6eab;
+      border-radius: 3px;
+      color: white;
+      background: linear-gradient(#76c2f2, #287fbd);
+      box-shadow: inset 0 1px rgba(255, 255, 255, 0.55);
+      cursor: pointer;
+    }
+    .windows-button:hover { background: linear-gradient(#8bd1fa, #3d91ca); }
+    .windows-button.active { border-color: #f8d45d; background: linear-gradient(#f4ce58, #a66b06); }
+    body.celebrity-mode-active main, body.celebrity-mode-active .achievements-window { border-color: #d59a20; }
+    body.celebrity-mode-active .title-bar { background: linear-gradient(#ffe991, #c98b16 48%, #8e5600); text-shadow: 1px 1px #704400; }
+    #friends-app { color: white; background: rgba(20, 20, 20, 0.72); }
+    #friends-app[hidden], #signup-screen[hidden], #startup-screen[hidden] { display: none; }
+    #friends-app .screen { background: url('ui-bg.jpg') center / cover; background-blend-mode: multiply; }
+    #friends-app .screen { background-color: rgba(20, 20, 20, 0.72); }
+    #friends-app h1 { margin-top: 0; }
+    #friends-app .screen { text-shadow: 0 0 5px #000; }
+    #friends-app input { color: black; }
+    #friends-app {
+      --friend-button-border: #2b6eab;
+      --friend-button-top: #76c2f2;
+      --friend-button-bottom: #287fbd;
+    }
+    #friends-app button {
+      margin: 0;
+      box-sizing: border-box;
+      height: 22px;
+      padding: 1px 8px;
+      border: 1px solid var(--friend-button-border);
+      border-radius: 3px;
+      color: white;
+      background: linear-gradient(var(--friend-button-top), var(--friend-button-bottom));
+      box-shadow: inset 0 1px rgba(255, 255, 255, 0.55);
+      font: 16px Arial, sans-serif;
+      cursor: pointer;
+    }
+    #friends-app button:hover, #friends-app button:focus-visible { filter: brightness(1.16); outline: none; }
+    #friend-form button { margin-left: 4px; }
+    .request-actions button + button { margin-left: 4px; }
+    .profile { display: flex; align-items: center; gap: 10px; margin: 0 0 18px; }
+    .profile img { width: 52px; height: 52px; object-fit: cover; }
+    .profile-avatar-column { display: flex; flex-direction: column; align-items: flex-start; }
+    #friends-app #edit-profile { width: 52px; height: 18px; margin-top: 2px; padding: 1px 0; font: 12px Arial, sans-serif; }
+    .profile p { margin: 3px 0 0; }
+    .level-info { margin: 0 0 8px; font-size: 12px; }
+    .xp-bar { width: 150px; height: 8px; margin-top: 3px; border: 1px solid #143d5c; background: #091c2a; }
+    .xp-bar-fill { height: 100%; background: linear-gradient(90deg, #62d5ff, #2176c1); transition: width 200ms ease; }
+    #achievement-area {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    #status-area {
+      position: fixed;
+      left: 18px;
+      bottom: 18px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    #clippy-assistant {
+      position: fixed;
+      right: 18px;
+      bottom: 105px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 150px;
+    }
+    #clippy-assistant[hidden] { display: none; }
+    #clippy-speech {
+      position: absolute;
+      right: -20px;
+      bottom: 105px;
+      width: 190px;
+      margin: 0;
+      padding: 11px 13px;
+      border: 2px solid #1c1c1c;
+      border-radius: 18px;
+      color: #111;
+      background: #fffbd0;
+      box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.35);
+      font: 16px Arial, sans-serif;
+      line-height: 1.2;
+    }
+    #clippy-speech[hidden] { display: none; }
+    #clippy-button { padding: 0; border: 0; background: transparent; cursor: pointer; }
+    #clippy-button img { display: block; width: 105px; height: 105px; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+    #clippy-button:focus-visible { outline: 2px solid #fffbd0; outline-offset: 3px; }
+    #clippy-assistant { touch-action: none; }
+    .status-popup {
+      display: flex;
+      align-items: center;
+      width: 240px;
+      padding: 10px 12px;
+      border: 1px solid #2b6eab;
+      color: #163d5c;
+      background: #eaf6ff;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+      animation: status-slide 4s ease-in-out forwards;
+    }
+    .status-popup img { width: 20px; height: 20px; margin-right: 8px; }
+    @keyframes status-slide {
+      0%, 100% { opacity: 0; transform: translateY(80px); }
+      12%, 88% { opacity: 1; transform: translateY(0); }
+    }
+    .achievements-button {
+      position: fixed;
+      top: 50%;
+      left: calc(50% + 238px);
+      transform: translateY(-50%);
+      z-index: 2;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      width: 74px;
+      margin: 4px 0;
+      padding: 4px;
+      border: 1px solid transparent;
+      color: white;
+      background: transparent;
+      font: inherit;
+      font-size: 12px;
+      text-shadow: 1px 1px #000;
+      cursor: pointer;
+    }
+    .achievements-button[hidden] { display: none; }
+    .themes-button { left: auto; right: calc(50% + 238px); }
+    .themes-menu {
+      position: fixed;
+      top: calc(50% + 50px);
+      right: calc(50% + 228px);
+      z-index: 2;
+      width: 130px;
+      padding: 8px;
+      border: 1px solid #2b6eab;
+      color: #173f60;
+      background: #eef6fc;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+      font-size: 12px;
+    }
+    .themes-menu[hidden] { display: none; }
+    .themes-menu select { width: 100%; margin-top: 4px; }
+    .friends-shell { position: relative; }
+    .friends-shell { width: min(440px, calc(100% - 32px)); }
+    #theme-fade {
+      position: fixed;
+      inset: 0;
+      z-index: 9;
+      pointer-events: none;
+      opacity: 0;
+      background: #000;
+      transition: opacity 250ms ease;
+    }
+    #theme-fade.active { opacity: 1; }
+    body.gangster-edition::before { background-image: url('gangster-bg.jpg'); }
+    body.gangster-edition main, body.gangster-edition .achievements-window { border-color: #a81515; }
+    body.gangster-edition .title-bar { background: linear-gradient(#7a1010, #3a0000 48%, #150000); }
+    body.gangster-edition #friends-app, body.gangster-edition #friends-app .screen { background: #000; background-image: none; }
+    body.gangster-edition .xp-bar { border-color: #a81515; background: #180000; }
+    body.gangster-edition .xp-bar-fill { background: linear-gradient(90deg, #ff5b5b, #a81515); }
+    body.gangster-edition #friends-app { --friend-button-border: #a81515; --friend-button-top: #a72c2c; --friend-button-bottom: #520000; }
+    body.gangster-edition .logout-button { border-color: #a81515; background: linear-gradient(#a72c2c, #520000); }
+    body.xbox360-edition::before { background-image: url('xbox360-bg.jpg'); }
+    body.xbox360-edition main, body.xbox360-edition .achievements-window { border-color: #78b82a; }
+    body.xbox360-edition .title-bar { background: linear-gradient(#a4d955, #5f9c1b 48%, #3d6f12); text-shadow: 1px 1px #355b10; }
+    body.xbox360-edition #friends-app, body.xbox360-edition #friends-app .screen { background: url('xbox360-ui-bg.jpg') center / cover; background-color: transparent; }
+    body.xbox360-edition .xp-bar { border-color: #78b82a; background: #23470d; }
+    body.xbox360-edition .xp-bar-fill { background: linear-gradient(90deg, #c5ed6d, #78b82a); }
+    body.xbox360-edition #friends-app { --friend-button-border: #78b82a; --friend-button-top: #a4d955; --friend-button-bottom: #4f8d18; }
+    body.xbox360-edition .logout-button { border-color: #78b82a; background: linear-gradient(#a4d955, #4f8d18); }
+    body.night-edition::before { background-image: url('night-bg.jpg'); }
+    body.night-edition main, body.night-edition .achievements-window { border-color: #888; }
+    body.night-edition .title-bar { background: linear-gradient(#555, #292929 48%, #111); text-shadow: 1px 1px #000; }
+    body.night-edition #friends-app, body.night-edition #friends-app .screen { background: url('night-ui-bg.jpg') center / cover; background-color: transparent; }
+    body.night-edition .xp-bar { border-color: #aaa; background: #222; filter: grayscale(1); }
+    body.night-edition .xp-bar-fill { background: linear-gradient(90deg, #ddd, #666); }
+    body.night-edition #friends-app { --friend-button-border: #aaa; --friend-button-top: #666; --friend-button-bottom: #2f2f2f; }
+    body.night-edition .logout-button { border-color: #aaa; background: linear-gradient(#666, #2f2f2f); }
+    body.steam-edition { font-family: Arial, sans-serif; }
+    body.steam-edition::before { background-image: url('steam-bg.jpg'); }
+    body.steam-edition main, body.steam-edition .achievements-window { border-color: #1b2838; }
+    body.steam-edition .title-bar { background: linear-gradient(#263b52, #1b2838 48%, #101923); text-shadow: 1px 1px #000; }
+    body.steam-edition #friends-app, body.steam-edition #friends-app .screen { background: url('steam-ui-bg.png') center / cover; background-color: transparent; }
+    body.steam-edition .xp-bar { border-color: #3b6280; background: #142333; }
+    body.steam-edition .xp-bar-fill { background: linear-gradient(90deg, #66c0f4, #3b7da7); }
+    body.steam-edition #friends-app { --friend-button-border: #3b6280; --friend-button-top: #416d8c; --friend-button-bottom: #1b354b; }
+    body.steam-edition .logout-button { border-color: #3b6280; background: linear-gradient(#416d8c, #1b354b); }
+    body.halflife-edition { font-family: 'Trebuchet MS', sans-serif; }
+    body.halflife-edition::before { background-image: url('hl-bg.jpg'); }
+    body.halflife-edition main, body.halflife-edition .achievements-window { border-color: #a7ad81; }
+    body.halflife-edition .title-bar { background: linear-gradient(#606f51, #3d4935 48%, #2c3627); text-shadow: 1px 1px #172016; }
+    body.halflife-edition #friends-app, body.halflife-edition #friends-app .screen { background: url('hl-ui-bg.jpg') center / cover; background-color: #303b2a; }
+    body.halflife-edition .xp-bar { border-color: #a7ad81; background: #20291c; }
+    body.halflife-edition .xp-bar-fill { background: linear-gradient(90deg, #d3d98d, #7e9460); }
+    body.halflife-edition #friends-app { --friend-button-border: #a7ad81; --friend-button-top: #6b7a5b; --friend-button-bottom: #384531; }
+    body.halflife-edition .logout-button { border-color: #a7ad81; background: linear-gradient(#6b7a5b, #384531); }
+    body.passion-edition { font-family: 'Comic Sans MS', 'Comic Sans', cursive; }
+    body.passion-edition::before { background-image: url('passion-bg.jpg'); }
+    body.passion-edition main, body.passion-edition .achievements-window { border-color: #ff3aa7; border-image: linear-gradient(135deg, #ff2d55, #ffcc00, #36d96d, #26a7ff, #9d4edd) 1; }
+    body.passion-edition .title-bar { background: linear-gradient(90deg, #ff2d55, #ff9f1c, #f8e71c, #3bd671, #22a6f2, #9b59ff, #ff2d55); background-size: 200% 100%; color: #fff; text-shadow: 1px 1px #72215d; }
+    body.passion-edition #friends-app, body.passion-edition #friends-app .screen { background: url('passion-ui-bg.jpg') center / cover; background-color: transparent; }
+    body.passion-edition .xp-bar { border-color: #ff57be; background: #44225a; }
+    body.passion-edition .xp-bar-fill { background: linear-gradient(90deg, #ff2d55, #ffcc00, #36d96d, #26a7ff, #9d4edd); }
+    body.passion-edition #friends-app button { border-color: #ff57be; background: linear-gradient(90deg, #ff2d55, #ffcc00, #36d96d, #26a7ff, #9d4edd); }
+    body.passion-edition .logout-button { border-color: #ff57be; background: linear-gradient(90deg, #ff2d55, #ffcc00, #36d96d, #26a7ff, #9d4edd); }
+    body.gmod-edition { font-family: 'Coolvetica', 'Arial Narrow', Arial, sans-serif; }
+    body.gmod-edition::before { background-image: url('gmod-bg.jpg'); }
+    body.gmod-edition main, body.gmod-edition .achievements-window { border: 2px solid #ababab; }
+    body.gmod-edition .title-bar { background: linear-gradient(#d8d8d8, #ababab 48%, #777); color: white; text-shadow: 1px 1px #333; }
+    body.gmod-edition #friends-app, body.gmod-edition #friends-app .screen { background: url('gmod-ui-bg.jpg') center / cover; background-color: transparent; }
+    body.gmod-edition #friends-app { --friend-button-border: #ababab; --friend-button-top: #d1d1d1; --friend-button-bottom: #777; }
+    body.gmod-edition .logout-button { border-color: #ababab; background: linear-gradient(#d1d1d1, #777); }
+    #friends-app button.accept-request { border-color: #4d8d32; background: linear-gradient(#8fc76d, #4d8d32); }
+    #friends-app button.decline-request { border-color: #a62b2b; background: linear-gradient(#df6a6a, #a62b2b); }
+    #friends-app button.accept-request, #friends-app button.decline-request { display: inline-flex; align-items: center; justify-content: center; }
+    #friends-app .accept-request .button-icon, #friends-app .decline-request .button-icon { margin: 0 4px 0 0; vertical-align: middle; }
+    body.gangster-edition .logout-button,
+    body.xbox360-edition .logout-button,
+    body.night-edition .logout-button,
+    body.steam-edition .logout-button,
+    body.halflife-edition .logout-button,
+    body.passion-edition .logout-button,
+    body.gmod-edition .logout-button {
+      border-color: #8f1d1d;
+      background: linear-gradient(#d14b4b, #8f1d1d);
+    }
+    #boot-fade {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none;
+      background: #000;
+      animation: boot-fade 1.2s ease-out forwards;
+    }
+    @keyframes boot-fade {
+      to { opacity: 0; visibility: hidden; }
+    }
+    .achievements-button img { width: 40px; height: 40px; margin-bottom: 3px; }
+    .achievements-button:hover, .achievements-button:focus-visible { border-color: #8bc9f1; background: rgba(77, 157, 213, 0.45); outline: none; }
+    #achievements-panel[hidden], #credits-panel[hidden] { display: none; }
+    #achievements-panel, #credits-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 3;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.45);
+    }
+    .achievements-window {
+      width: min(380px, 100%);
+      overflow: hidden;
+      border: 1px solid #0b5394;
+      border-radius: 7px;
+      background: #eef6fc;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.65);
+    }
+    .achievements-content { padding: 16px; color: #183e5d; }
+    .achievements-content h2 { margin: 0 0 8px; font-size: 19px; }
+    #achievements-list { display: grid; gap: 7px; max-height: 300px; overflow-y: auto; }
+    .achievement-item { display: flex; align-items: center; gap: 8px; padding: 7px; border: 1px solid #b7cddd; background: white; }
+    .achievement-icon { position: relative; width: 30px; height: 30px; flex: 0 0 30px; }
+    .achievement-icon > img { width: 30px; height: 30px; }
+    .achievement-icon .achievement-lock-icon { position: absolute; inset: 0; z-index: 1; }
+    .achievement-item.locked { opacity: 0.5; }
+    .achievement-item.locked img { filter: grayscale(1); }
+    .achievement-item.special:not(.locked) { border-color: #d6a526; box-shadow: 0 0 7px rgba(230, 181, 46, 0.75); }
+    .achievement-item small { display: block; }
+    .achievement-popup {
+      display: flex;
+      align-items: center;
+      width: 260px;
+      padding: 12px;
+      border: 1px solid #6c9fca;
+      color: white;
+      background: linear-gradient(#29465d, #152a3a);
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.55);
+      animation: achievement-slide 4s ease-in-out forwards;
+    }
+    .achievement-popup img { width: 42px; height: 42px; margin-right: 10px; }
+    .achievement-popup.special { border-color: #ffd45c; box-shadow: 0 0 18px #e6b52e, 0 3px 12px rgba(0, 0, 0, 0.55); }
+    .achievement-popup strong, .achievement-popup span { display: block; }
+    .achievement-popup span { margin-top: 3px; font-size: 13px; }
+    @keyframes achievement-slide {
+      0%, 100% { opacity: 0; transform: translateY(120px); }
+      12%, 88% { opacity: 1; transform: translateY(0); }
+    }
+    input { color: black; }
+    li { margin: 6px 0; }
+    .profile-picture { width: 40px; height: 40px; margin-right: 8px; vertical-align: middle; object-fit: cover; }
+    .rare-name {
+      font-weight: bold;
+      color: #ffd34d;
+      background: linear-gradient(#fff6b5, #f2bd22 48%, #fff1a0);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 5px rgba(255, 201, 45, 0.8);
+    }
+    #friends-app .remove { margin-left: 8px; }
+    #friend-request { margin: 16px 0; }
+    .friends-sort { margin: 0 0 10px; }
+    .friends-sort label { margin-right: 5px; }
+    @media (max-width: 620px) {
+      .achievements-button { left: auto; right: 8px; }
+      .themes-button { right: auto; left: 8px; }
+      .themes-menu { right: auto; left: 8px; }
+    }
+
