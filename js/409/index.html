@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lämpötilamuunnin</title>
+    <style>
+        .virhe { color: #b00020; }
+    </style>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <h1>Lämpötilamuunnin</h1>
+
+    <form id="muunnin">
+        <select id="suunta" aria-label="Muunnossuunta">
+            <option value="c-f">Celsius → Fahrenheit</option>
+            <option value="f-c">Fahrenheit → Celsius</option>
+        </select>
+        <br>
+        <label for="lampotila">Syötä lämpötila:</label>
+        <br>
+        <input id="lampotila" name="lampotila" type="text" inputmode="decimal" aria-describedby="tulos">
+        <button type="submit">Muunna</button>
+
+        <div role="group" aria-label="Desimaalien määrä">
+            <label><input type="radio" name="desimaalit" value="1" checked> 1 desimaali</label>
+            <br>
+            <label><input type="radio" name="desimaalit" value="2"> 2 desimaalia</label>
+            <br>
+            <label><input type="radio" name="desimaalit" value="3"> 3 desimaalia</label>
+        </div>
+    </form>
+
+    <p id="tulos" role="status" aria-live="polite" aria-atomic="true"></p>
+</body>
+</html>
