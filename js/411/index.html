@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekisteröitymislomake</title>
+    <script src="script.js" defer></script>
+    <style>
+        body { max-width: 620px; margin: 24px auto; padding: 0 16px; }
+        h1, .ohje { margin-left: 24px; }
+        .rivi { display: grid; grid-template-columns: 105px minmax(0, 1fr); gap: 10px; margin-bottom: 12px; align-items: start; }
+        .otsikko { text-align: right; padding-top: 2px; font: 15px Arial, sans-serif; }
+        input[type="text"], input[type="password"], textarea { box-sizing: border-box; width: 100%; max-width: 335px; }
+        #kayttaja, #salasana { max-width: 110px; }
+        #postinumero { max-width: 155px; }
+        textarea { max-width: 355px; height: 155px; }
+        .virhe { display: block; color: #a00019; font: 14px Arial, sans-serif; margin-top: 4px; }
+        .virhe:empty { display: none; }
+        [aria-invalid="true"] { outline: 2px solid #a00019; outline-offset: 1px; }
+        .laheta { margin-left: 235px; font-size: 18px; }
+        #palaute { margin-left: 115px; }
+        #palaute.onnistui { color: #176329; }
+        @media (max-width: 420px) {
+            body { padding: 0 8px; }
+            h1, .ohje { margin-left: 0; }
+            h1 { font-size: 28px; }
+            .rivi { grid-template-columns: 95px minmax(0, 1fr); gap: 8px; }
+            .laheta { margin-left: 103px; }
+            #palaute { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Rekisteröitymislomake</h1>
+    <p class="ohje"><strong>Siirry kentästä toiseen tab-näppäimellä.</strong></p>
+    <p class="ohje">Kaikki kentät paitsi Lisätietoja ovat pakollisia.</p>
+    <form id="rekisterointi" novalidate>
+        <div class="rivi">
+            <label class="otsikko" for="kayttaja">Käyttäjä ID:</label>
+            <div><input type="text" id="kayttaja" name="kayttaja" aria-describedby="kayttaja-virhe"><span class="virhe" id="kayttaja-virhe"></span></div>
+        </div>
+        <div class="rivi">
+            <label class="otsikko" for="salasana">Salasana:</label>
+            <div><input type="password" id="salasana" name="salasana" aria-describedby="salasana-ohje salasana-virhe"><small id="salasana-ohje" style="display: block">Vähintään 6 merkkiä, yksi numero, yksi iso kirjain ja yksi merkeistä !@£$€&amp;%#.</small><span class="virhe" id="salasana-virhe"></span></div>
+        </div>
+        <div class="rivi">
+            <label class="otsikko" for="nimi">Nimi:</label>
+            <div><input type="text" id="nimi" name="nimi" aria-describedby="nimi-virhe"><span class="virhe" id="nimi-virhe"></span></div>
+        </div>
+        <div class="rivi">
+            <label class="otsikko" for="osoite">Osoite:</label>
+            <div><input type="text" id="osoite" name="osoite" aria-describedby="osoite-virhe"><span class="virhe" id="osoite-virhe"></span></div>
+        </div>
+        <div class="rivi">
+            <label class="otsikko" for="maa">Maa:</label>
+            <div><select id="maa" name="maa" aria-describedby="maa-virhe">
+                <option value="">(Valitse maa)</option>
+                <option value="fi">Suomi</option><option value="se">Ruotsi</option>
+                <option value="no">Norja</option><option value="ee">Viro</option><option value="muu">Muu maa</option>
+            </select><span class="virhe" id="maa-virhe"></span></div>
+        </div>
+        <div class="rivi">
+            <label class="otsikko" for="postinumero">Postinumero:</label>
+            <div><input type="text" id="postinumero" name="postinumero" aria-describedby="postinumero-virhe"><span class="virhe" id="postinumero-virhe"></span></div>
+        </div>
+        <div class="rivi">
+            <label class="otsikko" for="sahkoposti">Sähköposti:</label>
+            <div><input type="text" id="sahkoposti" name="sahkoposti" aria-describedby="sahkoposti-virhe"><span class="virhe" id="sahkoposti-virhe"></span></div>
+        </div>
+        <div class="rivi">
+            <span class="otsikko" id="sukupuoli-otsikko">Sukupuoli:</span>
+            <div role="group" aria-labelledby="sukupuoli-otsikko">
+                <label><input type="radio" name="sukupuoli" value="mies" aria-describedby="sukupuoli-virhe">Mies</label>
+                <label><input type="radio" name="sukupuoli" value="nainen" aria-describedby="sukupuoli-virhe">Nainen</label>
+                <span class="virhe" id="sukupuoli-virhe"></span>
+            </div>
+        </div>
+        <div class="rivi">
+            <span class="otsikko" id="kieli-otsikko">Kieli:</span>
+            <div role="group" aria-labelledby="kieli-otsikko">
+                <label><input type="checkbox" name="kieli" value="suomi" checked aria-describedby="kieli-virhe">Suomi</label>
+                <label><input type="checkbox" name="kieli" value="muu" aria-describedby="kieli-virhe">Muu kuin suomi</label>
+                <span class="virhe" id="kieli-virhe"></span>
+            </div>
+        </div>
+        <div class="rivi">
+            <label class="otsikko" for="lisatietoja">Lisätietoja:</label>
+            <textarea id="lisatietoja" name="lisatietoja"></textarea>
+        </div>
+        <button class="laheta" type="submit">Lähetä</button>
+        <p id="palaute" role="status" aria-live="polite" aria-atomic="true"></p>
+    </form>
+</body>
+</html>
